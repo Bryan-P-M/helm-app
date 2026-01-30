@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helm — Product Architecture Map</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0f; color: #e0e0e0; overflow-x: hidden; }
+  
+  .header { text-align: center; padding: 40px 20px 20px; }
+  .header h1 { font-size: 2.5em; color: #4fc3f7; letter-spacing: 2px; }
+  .header p { color: #888; margin-top: 8px; font-size: 1.1em; }
+  
+  .section { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+  .section h2 { color: #4fc3f7; font-size: 1.5em; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #1a1a2e; }
+  
+  /* Feature Relationship Map */
+  .map-container { position: relative; width: 100%; min-height: 600px; background: #0d0d1a; border-radius: 16px; padding: 40px; margin-bottom: 40px; }
+  
+  .feature-node {
+    position: absolute; padding: 16px 20px; border-radius: 12px;
+    text-align: center; cursor: pointer; transition: all 0.3s;
+    min-width: 140px; z-index: 2;
+  }
+  .feature-node:hover { transform: scale(1.05); z-index: 3; }
+  .feature-node h3 { font-size: 0.95em; margin-top: 6px; }
+  .feature-node .icon { font-size: 1.8em; }
+  .feature-node .desc { font-size: 0.75em; color: #aaa; margin-top: 4px; }
+  
+  .core { background: linear-gradient(135deg, #1a237e, #283593); border: 2px solid #3f51b5; }
+  .governance { background: linear-gradient(135deg, #1b5e20, #2e7d32); border: 2px solid #4caf50; }
+  .ai { background: linear-gradient(135deg, #4a148c, #6a1b9a); border: 2px solid #9c27b0; }
+  .reporting { background: linear-gradient(135deg, #e65100, #ef6c00); border: 2px solid #ff9800; }
+  .user { background: linear-gradient(135deg, #006064, #00838f); border: 2px solid #00bcd4; }
+  
+  /* SVG connections */
+  .connections { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+  .connections line { stroke-width: 2; opacity: 0.4; }
+  .connections line.data-flow { stroke: #4fc3f7; stroke-dasharray: 8 4; }
+  .connections line.triggers { stroke: #ff9800; stroke-dasharray: 4 4; }
+  .connections line.feeds { stroke: #4caf50; }
+  
+  /* User Journey */
+  .journey { display: flex; gap: 0; align-items: stretch; margin: 20px 0; overflow-x: auto; padding-bottom: 10px; }
+  .journey-step {
+    flex: 1; min-width: 160px; padding: 20px 16px; background: #12121f;
+    border: 1px solid #1a1a2e; position: relative; text-align: center;
+  }
+  .journey-step:first-child { border-radius: 12px 0 0 12px; }
+  .journey-step:last-child { border-radius: 0 12px 12px 0; }
+  .journey-step .step-num { font-size: 0.7em; color: #4fc3f7; text-transform: uppercase; letter-spacing: 2px; }
+  .journey-step h4 { margin: 8px 0 4px; font-size: 0.95em; }
+  .journey-step p { font-size: 0.8em; color: #888; }
+  .journey-step .arrow { position: absolute; right: -12px; top: 50%; transform: translateY(-50%); color: #4fc3f7; font-size: 1.2em; z-index: 2; }
+  
+  /* Screen Map */
+  .screen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
+  .screen-card {
+    background: #12121f; border: 1px solid #1a1a2e; border-radius: 12px;
+    padding: 20px; transition: border-color 0.3s;
+  }
+  .screen-card:hover { border-color: #4fc3f7; }
+  .screen-card h4 { color: #4fc3f7; margin-bottom: 8px; }
+  .screen-card .wireframe {
+    background: #0a0a12; border-radius: 8px; padding: 12px;
+    margin: 10px 0; font-family: monospace; font-size: 0.75em; color: #666;
+    line-height: 1.6; white-space: pre;
+  }
+  .screen-card ul { list-style: none; padding: 0; }
+  .screen-card li { font-size: 0.85em; color: #aaa; padding: 3px 0; }
+  .screen-card li::before { content: "→ "; color: #4fc3f7; }
+  
+  /* Data Flow */
+  .flow-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+  .flow-table th { text-align: left; padding: 12px; background: #12121f; color: #4fc3f7; font-size: 0.85em; border-bottom: 2px solid #1a1a2e; }
+  .flow-table td { padding: 10px 12px; border-bottom: 1px solid #1a1a2e; font-size: 0.85em; }
+  .flow-table .arrow-cell { color: #ff9800; text-align: center; font-size: 1.2em; }
+  
+  /* Legend */
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin: 20px 0; padding: 16px; background: #12121f; border-radius: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85em; }
+  .legend-color { width: 16px; height: 16px; border-radius: 4px; }
+  
+  /* P3O Hierarchy */
+  .hierarchy { text-align: center; margin: 30px 0; }
+  .h-level { display: inline-flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 10px 0; }
+  .h-box {
+    padding: 16px 24px; border-radius: 10px; min-width: 180px;
+    text-align: center; position: relative;
+  }
+  .h-box h4 { font-size: 0.9em; }
+  .h-box p { font-size: 0.75em; color: #aaa; margin-top: 4px; }
+  .h-connector { color: #4fc3f7; font-size: 1.5em; margin: 5px 0; }
+  
+  .portfolio-level { background: linear-gradient(135deg, #1a237e, #283593); border: 2px solid #3f51b5; }
+  .programme-level { background: linear-gradient(135deg, #1b5e20, #2e7d32); border: 2px solid #4caf50; }
+  .project-level { background: linear-gradient(135deg, #006064, #00838f); border: 2px solid #00bcd4; }
+  
+  @media (max-width: 768px) {
+    .map-container { min-height: 900px; }
+    .feature-node { min-width: 110px; padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⎈ HELM</h1>
+  <p>P3O Governance SaaS — Product Architecture Map</p>
+</div>
+
+<!-- P3O HIERARCHY -->
+<div class="section">
+  <h2>📐 P3O Governance Hierarchy</h2>
+  <p style="color:#888; margin-bottom:20px;">Helm operates across three governance levels. Each level has its own views, controls, and reporting needs.</p>
+  
+  <div class="hierarchy">
+    <div class="h-level">
+      <div class="h-box portfolio-level">
+        <h4>🏛️ Portfolio</h4>
+        <p>Strategic oversight<br>Investment decisions<br>Resource allocation<br>Benefits realisation</p>
+      </div>
+    </div>
+    <div class="h-connector">▼</div>
+    <div class="h-level">
+      <div class="h-box programme-level">
+        <h4>📋 Programme</h4>
+        <p>Coordinated delivery<br>Dependency management<br>Benefit tracking<br>Tranche governance</p>
+      </div>
+    </div>
+    <div class="h-connector">▼</div>
+    <div class="h-level">
+      <div class="h-box project-level" style="margin-right:10px;">
+        <h4>📁 Project A</h4>
+        <p>Delivery<br>RAID<br>Tasks<br>Meetings</p>
+      </div>
+      <div class="h-box project-level" style="margin-right:10px;">
+        <h4>📁 Project B</h4>
+        <p>Delivery<br>RAID<br>Tasks<br>Meetings</p>
+      </div>
+      <div class="h-box project-level">
+        <h4>📁 Project C</h4>
+        <p>Delivery<br>RAID<br>Tasks<br>Meetings</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURE RELATIONSHIP MAP -->
+<div class="section">
+  <h2>🗺️ Feature Relationship Map</h2>
+  <p style="color:#888; margin-bottom:10px;">How Helm's features connect. Hover for details.</p>
+  
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#3f51b5;"></div> Core Features</div>
+    <div class="legend-item"><div class="legend-color" style="background:#4caf50;"></div> Governance</div>
+    <div class="legend-item"><div class="legend-color" style="background:#9c27b0;"></div> AI-Powered</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ff9800;"></div> Reporting</div>
+    <div class="legend-item"><div class="legend-color" style="background:#00bcd4;"></div> User Management</div>
+  </div>
+  
+  <div class="map-container" id="featureMap">
+    <svg class="connections" id="connections"></svg>
+    
+    <!-- Core Features -->
+    <div class="feature-node core" id="workspace" style="left:45%; top:30px;">
+      <div class="icon">🏢</div>
+      <h3>Workspace</h3>
+      <div class="desc">Multi-tenant container</div>
+    </div>
+    
+    <div class="feature-node core" id="projects" style="left:20%; top:140px;">
+      <div class="icon">📁</div>
+      <h3>Projects</h3>
+      <div class="desc">Delivery units</div>
+    </div>
+    
+    <div class="feature-node core" id="tasks" style="left:5%; top:280px;">
+      <div class="icon">✅</div>
+      <h3>Tasks</h3>
+      <div class="desc">Hierarchical work items</div>
+    </div>
+    
+    <div class="feature-node core" id="meetings" style="left:65%; top:140px;">
+      <div class="icon">🗓️</div>
+      <h3>Meetings</h3>
+      <div class="desc">Capture & track</div>
+    </div>
+    
+    <!-- Governance -->
+    <div class="feature-node governance" id="raid" style="left:5%; top:420px;">
+      <div class="icon">⚠️</div>
+      <h3>RAID Log</h3>
+      <div class="desc">Risks, Assumptions,<br>Issues, Dependencies</div>
+    </div>
+    
+    <div class="feature-node governance" id="actions" style="left:30%; top:350px;">
+      <div class="icon">🎯</div>
+      <h3>Actions</h3>
+      <div class="desc">Tracked commitments</div>
+    </div>
+    
+    <div class="feature-node governance" id="decisions" style="left:30%; top:480px;">
+      <div class="icon">⚖️</div>
+      <h3>Decisions</h3>
+      <div class="desc">Decision log & audit</div>
+    </div>
+    
+    <!-- AI -->
+    <div class="feature-node ai" id="ai-extract" style="left:65%; top:290px;">
+      <div class="icon">🤖</div>
+      <h3>AI Extraction</h3>
+      <div class="desc">Actions from meetings</div>
+    </div>
+    
+    <div class="feature-node ai" id="ai-insights" style="left:78%; top:420px;">
+      <div class="icon">💡</div>
+      <h3>AI Insights</h3>
+      <div class="desc">Risk patterns,<br>health scoring</div>
+    </div>
+    
+    <!-- Reporting -->
+    <div class="feature-node reporting" id="dashboard" style="left:45%; top:420px;">
+      <div class="icon">📊</div>
+      <h3>Dashboard</h3>
+      <div class="desc">Portfolio & programme<br>overview</div>
+    </div>
+    
+    <div class="feature-node reporting" id="reports" style="left:58%; top:520px;">
+      <div class="icon">📄</div>
+      <h3>Reports</h3>
+      <div class="desc">Status packs,<br>steering papers</div>
+    </div>
+    
+    <!-- User -->
+    <div class="feature-node user" id="users" style="left:82%; top:140px;">
+      <div class="icon">👥</div>
+      <h3>Users & Roles</h3>
+      <div class="desc">Auth, RBAC,<br>team management</div>
+    </div>
+  </div>
+</div>
+
+<!-- DATA FLOW -->
+<div class="section">
+  <h2>🔀 Data Flow — How Information Moves</h2>
+  
+  <table class="flow-table">
+    <thead>
+      <tr><th>Source</th><th></th><th>Destination</th><th>What Flows</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>🗓️ Meeting transcript</td><td class="arrow-cell">→</td><td>🤖 AI Extraction</td><td>Raw text → structured actions, decisions, risks</td></tr>
+      <tr><td>🤖 AI Extraction</td><td class="arrow-cell">→</td><td>🎯 Actions</td><td>Extracted action items (with assignee, date, confidence)</td></tr>
+      <tr><td>🤖 AI Extraction</td><td class="arrow-cell">→</td><td>⚖️ Decisions</td><td>Extracted decisions (with rationale, participants)</td></tr>
+      <tr><td>🤖 AI Extraction</td><td class="arrow-cell">→</td><td>⚠️ RAID Log</td><td>Identified risks and issues from discussion</td></tr>
+      <tr><td>🎯 Actions</td><td class="arrow-cell">→</td><td>✅ Tasks</td><td>Actions become trackable tasks (optional)</td></tr>
+      <tr><td>⚠️ RAID items</td><td class="arrow-cell">→</td><td>🎯 Actions</td><td>Risk mitigations become actions</td></tr>
+      <tr><td>⚠️ RAID + ✅ Tasks</td><td class="arrow-cell">→</td><td>💡 AI Insights</td><td>Pattern analysis, health scoring, early warnings</td></tr>
+      <tr><td>All entities</td><td class="arrow-cell">→</td><td>📊 Dashboard</td><td>Aggregated metrics, status, KPIs</td></tr>
+      <tr><td>📊 Dashboard</td><td class="arrow-cell">→</td><td>📄 Reports</td><td>Formatted status packs, steering papers</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- USER JOURNEYS -->
+<div class="section">
+  <h2>🚶 User Journey — Programme Manager (Primary)</h2>
+  
+  <div class="journey">
+    <div class="journey-step">
+      <div class="step-num">Step 1</div>
+      <h4>Login</h4>
+      <p>Auth → Workspace selection</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">Step 2</div>
+      <h4>Dashboard</h4>
+      <p>Portfolio/programme health at a glance</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">Step 3</div>
+      <h4>Drill Down</h4>
+      <p>Select project → view RAID, tasks, actions</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">Step 4</div>
+      <h4>Meeting</h4>
+      <p>Upload notes → AI extracts actions</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">Step 5</div>
+      <h4>Review</h4>
+      <p>Approve/edit extracted items</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">Step 6</div>
+      <h4>Report</h4>
+      <p>Generate status pack for steering</p>
+    </div>
+  </div>
+  
+  <h2 style="margin-top:40px;">🚶 User Journey — PMO Analyst</h2>
+  
+  <div class="journey">
+    <div class="journey-step">
+      <div class="step-num">Step 1</div>
+      <h4>Portfolio View</h4>
+      <p>All programmes at a glance</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">Step 2</div>
+      <h4>Health Check</h4>
+      <p>RAG status, AI health score</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">Step 3</div>
+      <h4>RAID Review</h4>
+      <p>Cross-project risks & dependencies</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">Step 4</div>
+      <h4>Chase</h4>
+      <p>Overdue actions, blocked items</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="step-num">Step 5</div>
+      <h4>Reporting</h4>
+      <p>Compile portfolio status pack</p>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN MAP -->
+<div class="section">
+  <h2>🖥️ Screen Map — UI Architecture</h2>
+  
+  <div class="screen-grid">
+    <div class="screen-card">
+      <h4>🏠 Dashboard (Home)</h4>
+      <div class="wireframe">┌─────────────────────────┐
+│ ⎈ HELM    [workspace ▼] │
+├─────────┬───────────────┤
+│ Nav     │ Portfolio KPIs │
+│ ------  │ ┌───┐┌───┐┌──┐│
+│ Dash    │ │RAG││Act││Ri││
+│ Projects│ └───┘└───┘└──┘│
+│ RAID    ├───────────────┤
+│ Actions │ Programme Cards│
+│ Meetings│ ┌─────┐┌─────┐│
+│ Reports │ │Prog1││Prog2││
+│         │ └─────┘└─────┘│
+└─────────┴───────────────┘</div>
+      <ul>
+        <li>Portfolio-level KPI tiles</li>
+        <li>Programme health cards (RAG)</li>
+        <li>Recent activity feed</li>
+        <li>AI alerts & recommendations</li>
+      </ul>
+    </div>
+    
+    <div class="screen-card">
+      <h4>📁 Project View</h4>
+      <div class="wireframe">┌─────────────────────────┐
+│ Project: Alpha  [Edit]  │
+├────────┬────────────────┤
+│ Tabs:  │                │
+│ Overv. │ Status: 🟡     │
+│ Tasks  │ Progress: ████░│
+│ RAID   │ Budget:  ██░░░ │
+│ Actions│ Timeline: ──●──│
+│ Meet.  ├────────────────┤
+│ Docs   │ Key Metrics    │
+│        │ Open Risks: 4  │
+│        │ Due Actions: 7 │
+│        │ Next Meeting:  │
+│        │   Feb 3, 10am  │
+└────────┴────────────────┘</div>
+      <ul>
+        <li>Project header with RAG status</li>
+        <li>Tabbed navigation within project</li>
+        <li>Summary metrics panel</li>
+        <li>Quick-access to key items</li>
+      </ul>
+    </div>
+    
+    <div class="screen-card">
+      <h4>⚠️ RAID Log</h4>
+      <div class="wireframe">┌─────────────────────────┐
+│ RAID Log    [+ Add] [⚙]│
+├─────────────────────────┤
+│ Filter: [All▼] [Open▼] │
+├─────────────────────────┤
+│ 🔴 R-001 Data migration │
+│    Owner: James  Due:2/5│
+│ 🟡 R-002 Vendor delay   │
+│    Owner: Sarah  Due:2/8│
+│ 🔵 A-001 Board approval │
+│    Status: Confirmed    │
+│ 🟠 I-003 API downtime   │
+│    Impact: High  Age:3d │
+│ 🔗 D-002 → Project Beta │
+│    Status: On track     │
+└─────────────────────────┘</div>
+      <ul>
+        <li>Filterable by type (R/A/I/D)</li>
+        <li>Status, owner, due date</li>
+        <li>Cross-project dependencies</li>
+        <li>Link to mitigating actions</li>
+        <li>AI-flagged emerging risks</li>
+      </ul>
+    </div>
+    
+    <div class="screen-card">
+      <h4>🎯 Actions Tracker</h4>
+      <div class="wireframe">┌─────────────────────────┐
+│ Actions       [+ Add]  │
+├─────────────────────────┤
+│ ☐ Review vendor SLA     │
+│   👤 James  📅 Feb 3    │
+│   Source: Steering 27/1 │
+│ ☐ Update test plan      │
+│   👤 Sarah  📅 Feb 5    │
+│   Source: AI extracted  │
+│ ☑ Submit change request │
+│   👤 James  ✅ Jan 28   │
+│   Source: RAID R-001    │
+└─────────────────────────┘</div>
+      <ul>
+        <li>Source tracking (meeting, RAID, manual)</li>
+        <li>Assignee and due date</li>
+        <li>Status: open / in progress / done / overdue</li>
+        <li>Link back to originating meeting or risk</li>
+      </ul>
+    </div>
+    
+    <div class="screen-card">
+      <h4>🗓️ Meeting Hub</h4>
+      <div class="wireframe">┌─────────────────────────┐
+│ Meetings    [+ New]    │
+├─────────────────────────┤
+│ 📝 Steering Committee   │
+│    Jan 27 │ 5 actions  │
+│    [View] [AI Extract]  │
+│ 📝 Sprint Review        │
+│    Jan 24 │ 3 actions  │
+│    [View] [AI Extract]  │
+├─────────────────────────┤
+│ Upload transcript...    │
+│ ┌───────────────────┐   │
+│ │  Drop file here   │   │
+│ └───────────────────┘   │
+└─────────────────────────┘</div>
+      <ul>
+        <li>Meeting list with action count</li>
+        <li>Upload transcript → AI extraction</li>
+        <li>Review extracted items before committing</li>
+        <li>Link to calendar (future)</li>
+      </ul>
+    </div>
+    
+    <div class="screen-card">
+      <h4>🤖 AI Extraction Review</h4>
+      <div class="wireframe">┌─────────────────────────┐
+│ AI Extracted: Steering  │
+│ Confidence: 92%         │
+├─────────────────────────┤
+│ ACTIONS (4 found):      │
+│ ☑ Review vendor SLA     │
+│   ↳ Assignee: [James ▼] │
+│   ↳ Due: [Feb 3    ]   │
+│   ↳ Confidence: 95%    │
+│ ☑ Update test plan      │
+│ ☐ Unclear: "look into"  │
+│   ↳ Confidence: 45% ⚠️ │
+├─────────────────────────┤
+│ DECISIONS (2 found):    │
+│ ☑ Go with Option B      │
+├─────────────────────────┤
+│ RISKS (1 found):        │
+│ ☑ Vendor timeline slip  │
+├─────────────────────────┤
+│ [Commit Selected] [Skip]│
+└─────────────────────────┘</div>
+      <ul>
+        <li>Review AI-extracted items</li>
+        <li>Confidence scoring per item</li>
+        <li>Edit assignee/date before committing</li>
+        <li>Low-confidence items flagged</li>
+        <li>Commit to RAID/Actions/Decisions</li>
+      </ul>
+    </div>
+    
+    <div class="screen-card">
+      <h4>📊 Portfolio Dashboard</h4>
+      <div class="wireframe">┌─────────────────────────┐
+│ Portfolio Overview      │
+├────────┬────────┬───────┤
+│ 🟢 x3  │ 🟡 x2  │ 🔴 x1│
+├────────┴────────┴───────┤
+│ Programme Timeline      │
+│ Alpha  ████████░░░░░    │
+│ Beta   ██████░░░░░░░    │
+│ Gamma  ██░░░░░░░░░░░    │
+├─────────────────────────┤
+│ Risk Heat Map           │
+│ ┌───┬───┬───┐           │
+│ │ 2 │   │ 1 │ Impact    │
+│ │   │ 1 │   │           │
+│ │   │   │   │           │
+│ └───┴───┴───┘           │
+│   Likelihood →          │
+└─────────────────────────┘</div>
+      <ul>
+        <li>RAG summary across all programmes</li>
+        <li>Timeline/Gantt view</li>
+        <li>Risk heat map</li>
+        <li>Resource utilisation</li>
+        <li>Benefits tracking</li>
+      </ul>
+    </div>
+    
+    <div class="screen-card">
+      <h4>📄 Report Generator</h4>
+      <div class="wireframe">┌─────────────────────────┐
+│ Generate Report         │
+├─────────────────────────┤
+│ Template: [Steering ▼]  │
+│ Period:   [This week ▼] │
+│ Scope:    [All prog. ▼] │
+├─────────────────────────┤
+│ Include:                │
+│ ☑ Executive summary     │
+│ ☑ RAG status            │
+│ ☑ Key risks & issues    │
+│ ☑ Actions due           │
+│ ☐ Financial summary     │
+│ ☑ Decisions made        │
+├─────────────────────────┤
+│ [Preview] [Export PDF]  │
+└─────────────────────────┘</div>
+      <ul>
+        <li>Template-based report generation</li>
+        <li>Auto-populated from live data</li>
+        <li>Export to PDF/PPTX</li>
+        <li>Steering pack, highlight report, etc.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- NAVIGATION STRUCTURE -->
+<div class="section">
+  <h2>🧭 Navigation Architecture</h2>
+  <div style="background:#12121f; border-radius:12px; padding:24px; font-family:monospace; font-size:0.85em; line-height:2;">
+    <span style="color:#4fc3f7;">⎈ HELM</span><br>
+    ├── 🏠 <strong>Dashboard</strong> (portfolio overview)<br>
+    ├── 📁 <strong>Programmes</strong><br>
+    │&nbsp;&nbsp;&nbsp;├── Programme A<br>
+    │&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── Overview (RAG, KPIs, timeline)<br>
+    │&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── Projects<br>
+    │&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── Project 1 → Tasks, RAID, Actions, Meetings<br>
+    │&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── Project 2 → Tasks, RAID, Actions, Meetings<br>
+    │&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── Programme RAID (aggregated)<br>
+    │&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── Programme Actions (aggregated)<br>
+    │&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── Reports<br>
+    │&nbsp;&nbsp;&nbsp;└── Programme B → ...<br>
+    ├── ⚠️ <strong>RAID</strong> (cross-programme view)<br>
+    ├── 🎯 <strong>Actions</strong> (cross-programme view)<br>
+    ├── 🗓️ <strong>Meetings</strong><br>
+    ├── 📊 <strong>Reports</strong><br>
+    └── ⚙️ <strong>Settings</strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── Workspace<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;├── Users & Roles<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;└── Integrations<br>
+  </div>
+</div>
+
+<div class="section" style="text-align:center; padding:40px; color:#666;">
+  <p>Generated by Silas · 29 Jan 2026 · For FigJam transfer</p>
+  <p style="margin-top:8px; font-size:0.85em;">Next: Transfer these concepts into Figma for interactive prototyping</p>
+</div>
+
+<script>
+// Draw connection lines between feature nodes
+function drawConnections() {
+  const svg = document.getElementById('connections');
+  const container = document.getElementById('featureMap');
+  const rect = container.getBoundingClientRect();
+  
+  svg.setAttribute('viewBox', `0 0 ${container.offsetWidth} ${container.offsetHeight}`);
+  
+  const connections = [
+    ['workspace', 'projects', 'feeds'],
+    ['workspace', 'meetings', 'feeds'],
+    ['workspace', 'users', 'feeds'],
+    ['projects', 'tasks', 'feeds'],
+    ['projects', 'raid', 'feeds'],
+    ['projects', 'actions', 'feeds'],
+    ['meetings', 'ai-extract', 'triggers'],
+    ['ai-extract', 'actions', 'data-flow'],
+    ['ai-extract', 'decisions', 'data-flow'],
+    ['ai-extract', 'raid', 'data-flow'],
+    ['raid', 'actions', 'triggers'],
+    ['raid', 'ai-insights', 'data-flow'],
+    ['tasks', 'ai-insights', 'data-flow'],
+    ['actions', 'dashboard', 'data-flow'],
+    ['raid', 'dashboard', 'data-flow'],
+    ['tasks', 'dashboard', 'data-flow'],
+    ['dashboard', 'reports', 'feeds'],
+    ['ai-insights', 'dashboard', 'data-flow'],
+  ];
+  
+  let html = '';
+  connections.forEach(([fromId, toId, type]) => {
+    const from = document.getElementById(fromId);
+    const to = document.getElementById(toId);
+    if (!from || !to) return;
+    
+    const x1 = from.offsetLeft + from.offsetWidth / 2;
+    const y1 = from.offsetTop + from.offsetHeight / 2;
+    const x2 = to.offsetLeft + to.offsetWidth / 2;
+    const y2 = to.offsetTop + to.offsetHeight / 2;
+    
+    html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${type}"/>`;
+  });
+  
+  svg.innerHTML = html;
+}
+
+window.addEventListener('load', drawConnections);
+window.addEventListener('resize', drawConnections);
+</script>
+
+</body>
+</html>

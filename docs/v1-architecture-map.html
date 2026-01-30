@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helm v1 — Architecture Map</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0f; color: #e0e0e0; }
+  
+  .header { text-align: center; padding: 30px 20px 10px; }
+  .header h1 { font-size: 2.2em; color: #4fc3f7; letter-spacing: 2px; }
+  .header .subtitle { color: #888; margin-top: 6px; }
+  .header .badge { display: inline-block; background: #1b5e20; color: #4caf50; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; margin-top: 8px; }
+
+  .tabs { display: flex; justify-content: center; gap: 4px; padding: 16px; background: #0d0d1a; border-bottom: 1px solid #1a1a2e; position: sticky; top: 0; z-index: 10; }
+  .tab { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9em; transition: all 0.2s; border: 1px solid transparent; }
+  .tab:hover { background: #1a1a2e; }
+  .tab.active { background: #1a237e; border-color: #3f51b5; color: #fff; }
+
+  .section { max-width: 1200px; margin: 0 auto; padding: 30px 20px; display: none; }
+  .section.active { display: block; }
+  .section h2 { color: #4fc3f7; font-size: 1.4em; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #1a1a2e; }
+  .section h3 { color: #81d4fa; font-size: 1.1em; margin: 20px 0 10px; }
+
+  /* Nav Tree */
+  .nav-tree { background: #0d0d1a; border-radius: 12px; padding: 24px; font-family: monospace; font-size: 0.9em; line-height: 2.2; }
+  .nav-tree .item { padding-left: 20px; }
+  .nav-tree .item.l2 { padding-left: 50px; }
+  .nav-tree .icon { margin-right: 8px; }
+  .nav-tree .active-marker { color: #4fc3f7; font-weight: bold; }
+  .nav-tree .badge-red { background: #c62828; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.75em; margin-left: 8px; }
+  .nav-tree .badge-blue { background: #1565c0; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.75em; margin-left: 8px; }
+
+  /* Screen Cards */
+  .screen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; margin: 20px 0; }
+  .screen-card { background: #0d0d1a; border: 1px solid #1a1a2e; border-radius: 12px; padding: 20px; transition: border-color 0.3s; }
+  .screen-card:hover { border-color: #4fc3f7; }
+  .screen-card h4 { color: #4fc3f7; margin-bottom: 10px; font-size: 1em; }
+  .screen-card .wireframe { background: #06060c; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 0.72em; color: #888; line-height: 1.5; white-space: pre; overflow-x: auto; margin: 10px 0; }
+  .screen-card ul { list-style: none; padding: 0; }
+  .screen-card li { font-size: 0.82em; color: #aaa; padding: 3px 0; }
+  .screen-card li::before { content: "→ "; color: #4fc3f7; }
+  .screen-card .states { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .screen-card .state { font-size: 0.7em; padding: 2px 8px; border-radius: 12px; }
+  .state-empty { background: #1a1a2e; color: #666; }
+  .state-loading { background: #0d47a1; color: #90caf9; }
+  .state-loaded { background: #1b5e20; color: #a5d6a7; }
+  .state-error { background: #b71c1c; color: #ef9a9a; }
+  .state-filtered { background: #4a148c; color: #ce93d8; }
+
+  /* Entity Map */
+  .entity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 20px 0; }
+  .entity-card { background: #0d0d1a; border-radius: 12px; padding: 16px; border-left: 4px solid; }
+  .entity-card.core { border-left-color: #3f51b5; }
+  .entity-card.governance { border-left-color: #4caf50; }
+  .entity-card.user { border-left-color: #00bcd4; }
+  .entity-card h4 { font-size: 0.95em; margin-bottom: 8px; }
+  .entity-card .fields { font-size: 0.78em; color: #999; line-height: 1.8; }
+  .entity-card .field-key { color: #4fc3f7; }
+
+  /* Data Flow */
+  .flow-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .flow-table th { text-align: left; padding: 10px; background: #0d0d1a; color: #4fc3f7; font-size: 0.82em; border-bottom: 2px solid #1a1a2e; }
+  .flow-table td { padding: 8px 10px; border-bottom: 1px solid #111; font-size: 0.82em; }
+  .flow-table .arrow { color: #ff9800; text-align: center; }
+
+  /* Principles */
+  .principle { background: #0d0d1a; border-radius: 12px; padding: 20px; margin: 12px 0; border-left: 4px solid #4fc3f7; }
+  .principle h4 { color: #4fc3f7; margin-bottom: 8px; }
+  .principle .this { color: #4caf50; font-size: 0.85em; margin-bottom: 4px; }
+  .principle .not-that { color: #ef5350; font-size: 0.85em; }
+  .principle .impl { color: #aaa; font-size: 0.82em; margin-top: 8px; }
+
+  /* Journey */
+  .journey { display: flex; gap: 0; margin: 20px 0; overflow-x: auto; }
+  .journey-step { flex: 1; min-width: 140px; padding: 16px 12px; background: #0d0d1a; border: 1px solid #1a1a2e; text-align: center; position: relative; }
+  .journey-step:first-child { border-radius: 12px 0 0 12px; }
+  .journey-step:last-child { border-radius: 0 12px 12px 0; }
+  .journey-step .num { font-size: 0.65em; color: #4fc3f7; text-transform: uppercase; letter-spacing: 2px; }
+  .journey-step h4 { margin: 6px 0 4px; font-size: 0.85em; }
+  .journey-step p { font-size: 0.72em; color: #888; }
+  .journey-step .arrow { position: absolute; right: -10px; top: 50%; transform: translateY(-50%); color: #4fc3f7; z-index: 2; }
+
+  .v2-note { background: #1a1a2e; border-radius: 8px; padding: 12px 16px; margin: 16px 0; font-size: 0.82em; color: #888; border-left: 3px solid #666; }
+  .v2-note strong { color: #ff9800; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⎈ HELM v1</h1>
+  <p class="subtitle">MVP Architecture Map — Demo Target: 7 Feb 2026</p>
+  <span class="badge">v1 MVP ONLY — v2 features excluded</span>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" onclick="showTab('nav')">🧭 Navigation</div>
+  <div class="tab" onclick="showTab('screens')">🖥️ Screens</div>
+  <div class="tab" onclick="showTab('entities')">🗄️ Data Model</div>
+  <div class="tab" onclick="showTab('flow')">🔀 Data Flow</div>
+  <div class="tab" onclick="showTab('journey')">🚶 User Journey</div>
+  <div class="tab" onclick="showTab('principles')">📐 Design Principles</div>
+</div>
+
+<!-- NAV TAB -->
+<div class="section active" id="nav">
+  <h2>🧭 v1 Navigation Tree</h2>
+  <p style="color:#888; margin-bottom:16px;">Simplified from full product — no programme layer, no portfolio view, no AI features.</p>
+  
+  <div class="nav-tree">
+    <div><span class="icon">⎈</span> <strong style="color:#4fc3f7;">HELM</strong> <span style="color:#666;">← Click → Dashboard</span></div>
+    <hr style="border-color:#1a1a2e; margin: 8px 0;">
+    <div class="item"><span class="icon">🏠</span> <span class="active-marker">Dashboard</span> <span style="color:#666;">— Workspace overview, project cards with KPIs</span></div>
+    <div class="item"><span class="icon">📁</span> Projects <span style="color:#666;">— Expandable list</span></div>
+    <div class="item l2">├── Project Alpha <span style="color:#666;">→ /projects/:id (tabs: Overview, RAID, Actions, Meetings, Decisions)</span></div>
+    <div class="item l2">├── Project Beta</div>
+    <div class="item l2">└── <span style="color:#4caf50;">+ New Project</span></div>
+    <div class="item"><span class="icon">🎯</span> My Actions <span class="badge-red">3</span> <span style="color:#666;">— Personal cross-project action list, overdue count</span></div>
+    <div class="item"><span class="icon">🗓️</span> Meetings <span class="badge-blue">2</span> <span style="color:#666;">— All meetings across projects</span></div>
+    <hr style="border-color:#1a1a2e; margin: 8px 0;">
+    <div class="item"><span class="icon">⚙️</span> Settings <span style="color:#666;">— Workspace config + Members</span></div>
+    <hr style="border-color:#1a1a2e; margin: 8px 0;">
+    <div class="item"><span class="icon">👤</span> <span style="color:#aaa;">Bryan Moyer</span> <span style="color:#666;">— Profile, logout</span></div>
+  </div>
+
+  <div class="v2-note">
+    <strong>v2 additions:</strong> Portfolio Overview, Programme-level nav, Reports section, AI Insights, Advanced RBAC in Settings
+  </div>
+
+  <h3>In-Project Tabs</h3>
+  <p style="color:#888; font-size:0.9em;">When inside a project, horizontal tabs provide sub-navigation:</p>
+  <div style="display:flex; gap:4px; margin:12px 0; flex-wrap:wrap;">
+    <span style="padding:8px 16px; background:#1a237e; border:1px solid #3f51b5; border-radius:8px; font-size:0.85em;">Overview</span>
+    <span style="padding:8px 16px; background:#1a1a2e; border:1px solid #333; border-radius:8px; font-size:0.85em;">RAID Log</span>
+    <span style="padding:8px 16px; background:#1a1a2e; border:1px solid #333; border-radius:8px; font-size:0.85em;">Actions</span>
+    <span style="padding:8px 16px; background:#1a1a2e; border:1px solid #333; border-radius:8px; font-size:0.85em;">Meetings</span>
+    <span style="padding:8px 16px; background:#1a1a2e; border:1px solid #333; border-radius:8px; font-size:0.85em;">Decisions</span>
+  </div>
+
+  <h3>Breadcrumbs</h3>
+  <p style="color:#888; font-size:0.85em; margin-bottom:8px;">Always visible. Every segment clickable. Filter state preserved in URL.</p>
+  <div style="background:#0d0d1a; padding:12px; border-radius:8px; font-size:0.82em;">
+    <div style="margin:4px 0;"><span style="color:#4fc3f7;">Helm</span> › <span style="color:#4fc3f7;">Projects</span> › <span style="color:#4fc3f7;">Alpha</span> › <span style="color:#fff;">RAID Log</span></div>
+    <div style="margin:4px 0;"><span style="color:#4fc3f7;">Helm</span> › <span style="color:#fff;">My Actions</span></div>
+    <div style="margin:4px 0;"><span style="color:#4fc3f7;">Helm</span> › <span style="color:#4fc3f7;">Projects</span> › <span style="color:#4fc3f7;">Alpha</span> › <span style="color:#4fc3f7;">Meetings</span> › <span style="color:#fff;">Steering 27 Jan</span></div>
+  </div>
+</div>
+
+<!-- SCREENS TAB -->
+<div class="section" id="screens">
+  <h2>🖥️ v1 Screen Map</h2>
+  <p style="color:#888; margin-bottom:16px;">Every screen in the MVP. ASCII wireframes + states + interactions.</p>
+
+  <div class="screen-grid">
+    <div class="screen-card">
+      <h4>🔐 Login / Signup</h4>
+      <div class="wireframe">┌─────────────────────────┐
+│         ⎈ HELM          │
+│                         │
+│   ┌─────────────────┐   │
+│   │  Email           │   │
+│   └─────────────────┘   │
+│   ┌─────────────────┐   │
+│   │  Password        │   │
+│   └─────────────────┘   │
+│                         │
+│   [ Sign In        ]   │
+│                         │
+│   Don't have account?   │
+│   Sign up               │
+└─────────────────────────┘</div>
+      <ul>
+        <li>Supabase Auth (email/password)</li>
+        <li>Redirects to Dashboard on success</li>
+        <li>Error: inline validation messages</li>
+      </ul>
+      <div class="states">
+        <span class="state state-empty">Default</span>
+        <span class="state state-loading">Authenticating</span>
+        <span class="state state-error">Invalid credentials</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <h4>🏠 Dashboard</h4>
+      <div class="wireframe">┌──────┬──────────────────────┐
+│ Nav  │ Dashboard             │
+│      ├──────────────────────┤
+│ 🏠●  │ ┌────┐┌────┐┌────┐  │
+│ 📁   │ │Open││Over││RAID│  │
+│ 🎯   │ │Risk││due ││Cnt │  │
+│ 🗓️   │ │ 4  ││ 7  ││ 12 │  │
+│      │ └────┘└────┘└────┘  │
+│      ├──────────────────────┤
+│      │ Project Cards        │
+│      │ ┌─────────┐┌───────┐│
+│      │ │Alpha 🔴 ││Beta 🟡││
+│      │ │R:3 A:5  ││R:1 A:2││
+│      │ └─────────┘└───────┘│
+└──────┴──────────────────────┘</div>
+      <ul>
+        <li>KPI summary tiles (RED/AMBER counts)</li>
+        <li>Project cards with RAG status</li>
+        <li>Exception-first: RED/AMBER prominent</li>
+        <li>Click project card → Project Overview</li>
+      </ul>
+      <div class="states">
+        <span class="state state-empty">No projects yet</span>
+        <span class="state state-loading">Skeleton cards</span>
+        <span class="state state-loaded">Project grid</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <h4>📁 Project Overview</h4>
+      <div class="wireframe">┌──────┬──────────────────────┐
+│ Nav  │ Helm › Projects › Alpha│
+│      │ Project Alpha    🔴   │
+│      ├─────┬─────┬────┬─────┤
+│      │Over●│RAID │Act │Meet │
+│      ├─────┴─────┴────┴─────┤
+│      │ Status: 🔴 At Risk   │
+│      │ Progress: ████░░ 60% │
+│      │                      │
+│      │ ┌────┐┌────┐┌────┐   │
+│      │ │Risk││Actns││Meet│   │
+│      │ │ 3  ││ 5   ││ 2  │   │
+│      │ └────┘└────┘└────┘   │
+│      │                      │
+│      │ Recent Activity      │
+│      │ • R-001 escalated    │
+│      │ • ACT-003 overdue    │
+└──────┴──────────────────────┘</div>
+      <ul>
+        <li>Project header with RAG status</li>
+        <li>Tab navigation (Overview, RAID, Actions, Meetings, Decisions)</li>
+        <li>Summary KPI tiles</li>
+        <li>Recent activity feed</li>
+      </ul>
+      <div class="states">
+        <span class="state state-loading">Skeleton</span>
+        <span class="state state-loaded">Full view</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <h4>⚠️ RAID Log</h4>
+      <div class="wireframe">┌──────┬──────────────────────┐
+│ Nav  │ Helm › Alpha › RAID   │
+│      ├─────┬─────┬────┬─────┤
+│      │Over │RAID●│Act │Meet │
+│      ├─────┴─────┴────┴─────┤
+│      │ [+Add] Filter:[All▼] │
+│      │ Showing RED/AMBER    │
+│      ├──┬──────┬────┬───┬───┤
+│      │ID│Title │Stat│RAG│Own│
+│      ├──┼──────┼────┼───┼───┤
+│      │R1│Data  │Open│🔴 │JS │
+│      │I1│API   │Esc │🔴 │SL │
+│      │R2│Vendor│Mitig│🟡│BM│
+│      ├──┴──────┴────┴───┴───┤
+│      │ 🟢 3 items hidden    │
+│      │ [Show all]           │
+└──────┴──────────────────────┘</div>
+      <ul>
+        <li>Exception-first: RED/AMBER shown, GREEN hidden</li>
+        <li>Filter by type (R/A/I/D), status, RAG, owner</li>
+        <li>Click row → detail drawer (slide from right)</li>
+        <li>Escalate button on each item</li>
+        <li>Source + timestamp on every item (P1: Traceable)</li>
+      </ul>
+      <div class="states">
+        <span class="state state-empty">No items — "Create first risk"</span>
+        <span class="state state-loaded">Exception view</span>
+        <span class="state state-filtered">Filter chips active</span>
+        <span class="state state-error">Retry banner</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <h4>🎯 Actions Tracker</h4>
+      <div class="wireframe">┌──────┬──────────────────────┐
+│ Nav  │ Helm › Alpha › Actions│
+│      ├─────┬─────┬────┬─────┤
+│      │Over │RAID │Act●│Meet │
+│      ├─────┴─────┴────┴─────┤
+│      │ [+Add] Filter:[Mine▼]│
+│      ├──────────────────────┤
+│      │ 🔴 OVERDUE           │
+│      │ ACT-001 Review SLA   │
+│      │  👤 James 📅 3d over │
+│      │  Source: Steering 27/1│
+│      │ [Complete✓][Escalate↑]│
+│      ├──────────────────────┤
+│      │ 🟡 DUE SOON          │
+│      │ ACT-003 Update plan  │
+│      │  👤 Sarah 📅 Feb 5   │
+│      ├──────────────────────┤
+│      │ ☑ COMPLETED (3)      │
+└──────┴──────────────────────┘</div>
+      <ul>
+        <li>Grouped: Overdue → Due Soon → On Track → Completed</li>
+        <li>Source tracking (meeting / RAID / manual)</li>
+        <li>One-click Complete, Reassign, Escalate</li>
+        <li>Red left border on overdue (P4: Exceptions First)</li>
+      </ul>
+      <div class="states">
+        <span class="state state-empty">No actions</span>
+        <span class="state state-loaded">Grouped list</span>
+        <span class="state state-filtered">By owner/status</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <h4>🗓️ Meeting Hub</h4>
+      <div class="wireframe">┌──────┬──────────────────────┐
+│ Nav  │ Helm › Alpha › Meet.  │
+│      ├─────┬─────┬────┬─────┤
+│      │Over │RAID │Act │Meet●│
+│      ├─────┴─────┴────┴─────┤
+│      │ [+ New Meeting]      │
+│      ├──────────────────────┤
+│      │ 📝 Steering Committee │
+│      │  27 Jan │ 5 actions  │
+│      │  2 decisions          │
+│      │  [View Details]       │
+│      ├──────────────────────┤
+│      │ 📝 Sprint Review      │
+│      │  24 Jan │ 3 actions  │
+│      │  [View Details]       │
+└──────┴──────────────────────┘</div>
+      <ul>
+        <li>MANUAL capture only (no AI, no upload)</li>
+        <li>Meeting list with action/decision counts</li>
+        <li>Create meeting → title, date, attendees, notes</li>
+        <li>Link actions + decisions from within meeting</li>
+      </ul>
+      <div class="states">
+        <span class="state state-empty">No meetings</span>
+        <span class="state state-loaded">Meeting list</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <h4>⚖️ Decisions Log</h4>
+      <div class="wireframe">┌──────┬──────────────────────┐
+│ Nav  │ Helm › Alpha › Decis. │
+│      ├─────┬─────┬────┬─────┤
+│      │Over │RAID │Act │Dec● │
+│      ├─────┴─────┴────┴─────┤
+│      │ [+ New Decision]     │
+│      ├──┬───────┬──────┬────┤
+│      │ID│Decision│Date │Mtg │
+│      ├──┼───────┼──────┼────┤
+│      │D1│Go with │27/01│Steer│
+│      │  │Option B│     │    │
+│      │D2│Defer  │24/01│Sprint│
+│      │  │Phase 2│     │    │
+│      ├──┴───────┴──────┴────┤
+│      │ Click row → detail   │
+│      │ Rationale, attendees │
+└──────┴──────────────────────┘</div>
+      <ul>
+        <li>Decision, rationale, participants, date</li>
+        <li>Link to source meeting</li>
+        <li>Full audit trail (P1: Traceable)</li>
+        <li>Click row → drawer with full detail</li>
+      </ul>
+      <div class="states">
+        <span class="state state-empty">No decisions</span>
+        <span class="state state-loaded">Decision table</span>
+        <span class="state state-filtered">By date/meeting</span>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <h4>🎯 My Actions (Global)</h4>
+      <div class="wireframe">┌──────┬──────────────────────┐
+│ Nav  │ Helm › My Actions     │
+│      ├──────────────────────┤
+│ 🎯●  │ Filter:[All▼][Open▼] │
+│      ├──────────────────────┤
+│      │ 🔴 OVERDUE (2)       │
+│      │ ACT-001 Review SLA   │
+│      │  📁 Alpha │ 3d over  │
+│      │ ACT-007 Budget sign  │
+│      │  📁 Beta │ 1d over   │
+│      ├──────────────────────┤
+│      │ 🟡 DUE SOON (3)      │
+│      │ ...                   │
+│      ├──────────────────────┤
+│      │ ✅ ON TRACK (4)       │
+└──────┴──────────────────────┘</div>
+      <ul>
+        <li>Personal view across ALL projects</li>
+        <li>Shows project name on each action</li>
+        <li>Same grouped layout as project actions</li>
+        <li>Overdue badge syncs with sidebar count</li>
+      </ul>
+      <div class="states">
+        <span class="state state-empty">No actions assigned</span>
+        <span class="state state-loaded">Grouped list</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ENTITIES TAB -->
+<div class="section" id="entities">
+  <h2>🗄️ v1 Data Model</h2>
+  <p style="color:#888; margin-bottom:16px;">Core entities and their key fields. Full schema in v1-database-schema.md.</p>
+
+  <div style="background:#0d0d1a; border-radius:12px; padding:20px; font-family:monospace; font-size:0.82em; line-height:1.8; margin-bottom:24px;">
+    <span style="color:#00bcd4;">USERS</span> ←── member_of ──→ <span style="color:#3f51b5;">WORKSPACE</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;has many<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#3f51b5;">PROJECTS</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;┌──────┼──────┐<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#4caf50;">RAID ITEMS</span>&nbsp;<span style="color:#4caf50;">MEETINGS</span>&nbsp;<span style="color:#4caf50;">DECISIONS</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└───┬───┘<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#4caf50;">ACTIONS</span> (links to RAID + Meetings)
+  </div>
+
+  <div class="entity-grid">
+    <div class="entity-card user">
+      <h4>👤 Users + Profiles</h4>
+      <div class="fields">
+        <span class="field-key">id</span> UUID (Supabase auth)<br>
+        <span class="field-key">email</span> string<br>
+        <span class="field-key">full_name</span> string<br>
+        <span class="field-key">avatar_url</span> string<br>
+        <span class="field-key">role</span> admin | member
+      </div>
+    </div>
+
+    <div class="entity-card core">
+      <h4>🏢 Workspaces</h4>
+      <div class="fields">
+        <span class="field-key">id</span> UUID<br>
+        <span class="field-key">name</span> string<br>
+        <span class="field-key">slug</span> string (URL-safe)<br>
+        <span class="field-key">created_by</span> → Users
+      </div>
+    </div>
+
+    <div class="entity-card core">
+      <h4>📁 Projects</h4>
+      <div class="fields">
+        <span class="field-key">id</span> UUID<br>
+        <span class="field-key">workspace_id</span> → Workspaces<br>
+        <span class="field-key">name, code</span> string<br>
+        <span class="field-key">status</span> active | paused | closed<br>
+        <span class="field-key">rag_status</span> red | amber | green
+      </div>
+    </div>
+
+    <div class="entity-card governance">
+      <h4>⚠️ RAID Items</h4>
+      <div class="fields">
+        <span class="field-key">id</span> UUID<br>
+        <span class="field-key">type</span> risk | assumption | issue | dependency<br>
+        <span class="field-key">title, description</span> string<br>
+        <span class="field-key">status</span> open | mitigating | closed | escalated<br>
+        <span class="field-key">rag_status</span> red | amber | green<br>
+        <span class="field-key">owner_id</span> → Users<br>
+        <span class="field-key">due_date</span> date<br>
+        <span class="field-key">escalated_from_id</span> → self (escalation chain)<br>
+        <span class="field-key">source_type</span> manual | meeting | action
+      </div>
+    </div>
+
+    <div class="entity-card governance">
+      <h4>🎯 Actions</h4>
+      <div class="fields">
+        <span class="field-key">id</span> UUID<br>
+        <span class="field-key">title, description</span> string<br>
+        <span class="field-key">owner_id</span> → Users<br>
+        <span class="field-key">status</span> open | in_progress | completed | blocked<br>
+        <span class="field-key">due_date</span> date<br>
+        <span class="field-key">source_type</span> meeting | raid | manual<br>
+        <span class="field-key">source_raid_id</span> → RAID Items<br>
+        <span class="field-key">source_meeting_id</span> → Meetings
+      </div>
+    </div>
+
+    <div class="entity-card governance">
+      <h4>🗓️ Meetings</h4>
+      <div class="fields">
+        <span class="field-key">id</span> UUID<br>
+        <span class="field-key">title</span> string<br>
+        <span class="field-key">meeting_date</span> datetime<br>
+        <span class="field-key">notes</span> text<br>
+        <span class="field-key">status</span> scheduled | completed | archived<br>
+        <span class="field-key">attendees</span> → Users (junction table)
+      </div>
+    </div>
+
+    <div class="entity-card governance">
+      <h4>⚖️ Decisions</h4>
+      <div class="fields">
+        <span class="field-key">id</span> UUID<br>
+        <span class="field-key">decision_text</span> string<br>
+        <span class="field-key">rationale</span> text<br>
+        <span class="field-key">decision_date</span> date<br>
+        <span class="field-key">source_meeting_id</span> → Meetings<br>
+        <span class="field-key">participants</span> → Users (junction table)
+      </div>
+    </div>
+  </div>
+
+  <div class="v2-note">
+    <strong>v2 additions:</strong> Programmes (between Workspace and Projects), Tasks (hierarchical, under Projects), AI Extraction tables, RACI assignments, OKR/KPI cascade
+  </div>
+</div>
+
+<!-- DATA FLOW TAB -->
+<div class="section" id="flow">
+  <h2>🔀 v1 Data Flow</h2>
+  <p style="color:#888; margin-bottom:16px;">How information moves in v1. All manual — no AI extraction.</p>
+
+  <table class="flow-table">
+    <thead>
+      <tr><th>Source</th><th></th><th>Destination</th><th>How (v1)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>👤 User</td><td class="arrow">→</td><td>⚠️ RAID Log</td><td>Manual entry: create risk, assumption, issue, or dependency</td></tr>
+      <tr><td>⚠️ RAID Item</td><td class="arrow">→</td><td>🎯 Action</td><td>User creates action from RAID item (linked via source_raid_id)</td></tr>
+      <tr><td>🗓️ Meeting</td><td class="arrow">→</td><td>🎯 Action</td><td>User manually creates action from meeting (linked via source_meeting_id)</td></tr>
+      <tr><td>🗓️ Meeting</td><td class="arrow">→</td><td>⚖️ Decision</td><td>User manually creates decision from meeting (linked via source_meeting_id)</td></tr>
+      <tr><td>⚠️ RAID Item</td><td class="arrow">↑</td><td>⚠️ RAID Item (escalated)</td><td>User escalates — creates linked copy at higher level</td></tr>
+      <tr><td>All entities</td><td class="arrow">→</td><td>📊 Dashboard</td><td>Aggregated counts: open risks, overdue actions, RAG status</td></tr>
+      <tr><td>All mutations</td><td class="arrow">→</td><td>📋 Audit Log</td><td>Automatic: every create/update/delete logged with user + timestamp</td></tr>
+    </tbody>
+  </table>
+
+  <div class="v2-note">
+    <strong>v2 additions:</strong> Meeting transcript → AI Extraction → Actions/Decisions/Risks (automated pipeline with confidence scores and review screen)
+  </div>
+</div>
+
+<!-- USER JOURNEY TAB -->
+<div class="section" id="journey">
+  <h2>🚶 v1 User Journey — Project Manager</h2>
+  <p style="color:#888; margin-bottom:16px;">The manual-only workflow. No AI. Every item created by hand.</p>
+
+  <div class="journey">
+    <div class="journey-step">
+      <div class="num">Step 1</div>
+      <h4>Login</h4>
+      <p>Email/password → Workspace</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="num">Step 2</div>
+      <h4>Dashboard</h4>
+      <p>See project health at a glance (RED/AMBER first)</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="num">Step 3</div>
+      <h4>Select Project</h4>
+      <p>Click card → Project Overview with tabs</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="num">Step 4</div>
+      <h4>RAID / Actions</h4>
+      <p>Review items, create new, escalate, update status</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="num">Step 5</div>
+      <h4>Meeting</h4>
+      <p>Record meeting, manually add actions + decisions</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="num">Step 6</div>
+      <h4>My Actions</h4>
+      <p>Personal view — chase overdue items</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:30px;">🚶 PMO Lead Journey</h3>
+  <div class="journey">
+    <div class="journey-step">
+      <div class="num">Step 1</div>
+      <h4>Dashboard</h4>
+      <p>Portfolio-lite view — all project cards</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="num">Step 2</div>
+      <h4>Triage</h4>
+      <p>RED projects first — drill into RAID</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="num">Step 3</div>
+      <h4>Chase</h4>
+      <p>My Actions → overdue items across projects</p>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="journey-step">
+      <div class="num">Step 4</div>
+      <h4>Review</h4>
+      <p>Check decisions log for governance trail</p>
+    </div>
+  </div>
+</div>
+
+<!-- PRINCIPLES TAB -->
+<div class="section" id="principles">
+  <h2>📐 The 5 Design Principles</h2>
+  <p style="color:#888; margin-bottom:16px;">From the Design Intelligence Specification. Every screen must satisfy all five.</p>
+
+  <div class="principle">
+    <h4>P1: Traceable, Not Trusted</h4>
+    <div class="this">✅ This: Every number links to source. Every status shows timestamp. Every decision connects to evidence.</div>
+    <div class="not-that">❌ Not that: Clean numbers without provenance. Summaries without drill-down.</div>
+    <div class="impl">📌 v1 implementation: created_by + created_at on all items. Source meeting links on actions/decisions. Audit trail table. "Last updated" on all views.</div>
+  </div>
+
+  <div class="principle">
+    <h4>P2: Escalation Paths, Not Dead Ends</h4>
+    <div class="this">✅ This: Every problem state shows who owns it, what happens next, how to escalate.</div>
+    <div class="not-that">❌ Not that: Red indicators without resolution routes. Alerts without owners.</div>
+    <div class="impl">📌 v1 implementation: Owner visible on all RAID/Actions. Escalate button on RAID items. Overdue actions show owner + due date. Every item has a clear "next action."</div>
+  </div>
+
+  <div class="principle">
+    <h4>P3: Hierarchy as Navigation, Not Decoration</h4>
+    <div class="this">✅ This: Workspace → Project structure is navigation. Drill-down preserves context. Drill-up restores state.</div>
+    <div class="not-that">❌ Not that: Flat lists losing context. Modals breaking flow.</div>
+    <div class="impl">📌 v1 implementation: Persistent breadcrumbs. Sidebar tree navigation. Filter state in URL params. Detail drawer (not modal) preserves parent context.</div>
+  </div>
+
+  <div class="principle">
+    <h4>P4: Exceptions First, Completeness on Demand</h4>
+    <div class="this">✅ This: Default views surface anomalies. RED/AMBER shown, GREEN hidden.</div>
+    <div class="not-that">❌ Not that: Complete lists requiring scanning. All items equal weight.</div>
+    <div class="impl">📌 v1 implementation: RAID Log shows RED/AMBER by default ("3 green items hidden — Show all"). Dashboard KPIs highlight overdue/at-risk counts. Actions grouped overdue-first.</div>
+  </div>
+
+  <div class="principle">
+    <h4>P5: Governance Rigour Through Workflow, Not Burden</h4>
+    <div class="this">✅ This: Audit trails automatic. Compliance through design. Users work naturally; governance happens.</div>
+    <div class="not-that">❌ Not that: Manual logging. Separate compliance workflows. Governance as overhead.</div>
+    <div class="impl">📌 v1 implementation: Automatic audit_log on all mutations. Status changes logged without user input. Source linking captured at creation time. No separate "log this" step.</div>
+  </div>
+</div>
+
+<div style="text-align:center; padding:30px; color:#666; font-size:0.8em;">
+  <p>Generated by Silas · 29 Jan 2026 · v1 MVP only · Demo target: 7 Feb 2026</p>
+  <p>Tech stack: Next.js + Supabase + Vercel</p>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>
