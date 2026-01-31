@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectDetail } from "@/lib/queries/projects";
 import Link from "next/link";
-import { ArrowLeft, FileText, CheckCircle, FolderKanban, AlertTriangle, Calendar, Layers, Waypoints, Briefcase, PlusCircle, User, CircleDot } from "lucide-react";
+import { ArrowLeft, FileText, CheckCircle, FolderKanban, AlertTriangle, Calendar, Layers, Waypoints, Briefcase, PlusCircle, User, CircleDot, Pencil } from "lucide-react";
 
 // Shadcn UI components
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import ProjectEditDialog from "@/components/projects/project-edit-dialog";
 
 // Constants
 import { RAG_BADGE_CLASSES, PRIORITY_BADGE_CLASSES } from "@/lib/constants";
@@ -96,6 +97,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <div className="flex items-center space-x-2">
           <Badge className={RAG_BADGE_CLASSES[project.rag_status as keyof typeof RAG_BADGE_CLASSES]}>{project.rag_status}</Badge>
           <Badge variant="secondary">{project.status}</Badge>
+          <ProjectEditDialog project={project}>
+            <Button variant="outline" size="sm"><Pencil className="mr-2 h-4 w-4" />Edit</Button>
+          </ProjectEditDialog>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-8">

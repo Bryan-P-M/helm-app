@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Link from "next/link";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Pencil } from "lucide-react";
+import PortfolioEditDialog from "@/components/portfolios/portfolio-edit-dialog";
 
 export default async function PortfolioDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -40,6 +41,9 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
             }>
               {portfolio.rag_status.toUpperCase()}
             </Badge>
+            <PortfolioEditDialog portfolio={portfolio}>
+              <Button variant="outline" size="sm"><Pencil className="mr-2 h-4 w-4" />Edit</Button>
+            </PortfolioEditDialog>
           </div>
           <p className="text-sm text-muted-foreground">Status: {portfolio.status}</p>
           <p className="text-sm text-muted-foreground">Director: {portfolio.director?.full_name || 'N/A'}</p>

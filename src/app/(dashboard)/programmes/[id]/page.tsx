@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { Pencil } from "lucide-react";
+import ProgrammeEditDialog from "@/components/programmes/programme-edit-dialog";
 
 export default async function ProgrammeDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -35,6 +37,9 @@ export default async function ProgrammeDetailPage({ params }: { params: { id: st
             {programme.rag_status}
           </Badge>
           <Badge variant="outline">{programme.status}</Badge>
+          <ProgrammeEditDialog programme={programme}>
+            <Button variant="outline" size="sm"><Pencil className="mr-2 h-4 w-4" />Edit</Button>
+          </ProgrammeEditDialog>
         </div>
       </div>
 
