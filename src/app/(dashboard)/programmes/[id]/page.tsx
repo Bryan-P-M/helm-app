@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getProgrammeDetail } from '@/lib/queries/programmes';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import RagBadge from "@/components/shared/rag-badge";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -33,9 +34,7 @@ export default async function ProgrammeDetailPage({ params }: { params: { id: st
           <p className="text-muted-foreground">{programme.description}</p>
         </div>
         <div className="flex items-center space-x-2">
-          <Badge className={`bg-${programme.rag_status}-500 hover:bg-${programme.rag_status}-500/80 capitalize`}>
-            {programme.rag_status}
-          </Badge>
+<RagBadge status={programme.rag_status as "red" | "amber" | "green"} editable entityId={programme.id} entityTable="programmes" />
           <Badge variant="outline">{programme.status}</Badge>
           <ProgrammeEditDialog programme={programme}>
             <Button variant="outline" size="sm"><Pencil className="mr-2 h-4 w-4" />Edit</Button>

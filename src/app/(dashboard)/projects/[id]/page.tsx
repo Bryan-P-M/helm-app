@@ -6,6 +6,7 @@ import { ArrowLeft, FileText, CheckCircle, FolderKanban, AlertTriangle, Calendar
 // Shadcn UI components
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import RagBadge from "@/components/shared/rag-badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -95,7 +96,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           {project.name} <span className="text-muted-foreground">({project.code})</span>
         </h2>
         <div className="flex items-center space-x-2">
-          <Badge className={RAG_BADGE_CLASSES[project.rag_status as keyof typeof RAG_BADGE_CLASSES]}>{project.rag_status}</Badge>
+          <RagBadge status={project.rag_status as "red" | "amber" | "green"} editable entityId={project.id} entityTable="projects" />
           <Badge variant="secondary">{project.status}</Badge>
           <ProjectEditDialog project={project}>
             <Button variant="outline" size="sm"><Pencil className="mr-2 h-4 w-4" />Edit</Button>

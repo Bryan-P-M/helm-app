@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getPortfolioDetail } from "@/lib/queries/portfolios";
+import RagBadge from "@/components/shared/rag-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,13 +35,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>{portfolio.name} ({portfolio.code})</CardTitle>
-            <Badge className={
-              portfolio.rag_status === 'red' ? 'bg-red-500 hover:bg-red-600' :
-              portfolio.rag_status === 'amber' ? 'bg-amber-500 hover:bg-amber-600' :
-              'bg-green-500 hover:bg-green-600'
-            }>
-              {portfolio.rag_status.toUpperCase()}
-            </Badge>
+<RagBadge status={portfolio.rag_status as "red" | "amber" | "green"} editable entityId={portfolio.id} entityTable="portfolios" />
             <PortfolioEditDialog portfolio={portfolio}>
               <Button variant="outline" size="sm"><Pencil className="mr-2 h-4 w-4" />Edit</Button>
             </PortfolioEditDialog>
