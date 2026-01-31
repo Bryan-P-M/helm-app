@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { format, isBefore, isAfter, parseISO, formatDistanceToNowStrict } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -85,11 +86,14 @@ function MeetingRows({
       {meetings.map((m) => (
         <TableRow
           key={m.id}
-          className="cursor-pointer hover:bg-muted/50"
-          onClick={() => onSelect(m)}
+          className="hover:bg-muted/50"
         >
           <TableCell><MeetingDateCell meetingDate={m.meeting_date} /></TableCell>
-          <TableCell className="font-medium">{m.title}</TableCell>
+          <TableCell className="font-medium">
+                      <Link href={`/meetings/${m.id}`} className="hover:underline">
+                        {m.title}
+                      </Link>
+                    </TableCell>
           <TableCell>{m.project?.name}</TableCell>
           <TableCell>
             <Badge variant={badgeVariant}>{MEETING_STATUS_LABELS[m.status]}</Badge>
