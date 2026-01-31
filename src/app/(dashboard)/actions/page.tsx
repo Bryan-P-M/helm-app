@@ -4,7 +4,11 @@ import type { ActionWithRelations } from "@/lib/types";
 import ActionsTable from "@/components/actions/actions-table";
 import ActionCreateDialog from "@/components/actions/action-create-dialog";
 
-export default async function ActionsPage() {
+export default async function ActionsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[]>>;
+}) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -18,6 +22,8 @@ export default async function ActionsPage() {
     .eq("user_id", user.id);
 
   const workspaceId = memberships?.[0]?.workspace_id;
+  const params = searchParams ? await searchParams : {};
+  const filterOverdue = String(params.filter ?? "") === "overdue";
   if (!workspaceId) {
     return <div className="p-8 text-center text-muted-foreground">No workspace found.</div>;
   }
@@ -25,6 +31,10 @@ export default async function ActionsPage() {
   let actions: ActionWithRelations[] = [];
   try {
     actions = await getActions(workspaceId);
+    if (filterOverdue) {
+      const today = new Date().toISOString().slice(0, 10);
+      actions = actions.filter(a => a.due_date && a.due_date <= today && !a.completed_at);
+    }
   } catch {
     // Error handled by empty state
   }
@@ -32,7 +42,9 @@ export default async function ActionsPage() {
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Actions Tracker</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {filterOverdue ? "Overdue Actions" : "Actions Tracker"}
+        </h1>
         <ActionCreateDialog workspaceId={workspaceId} />
       </div>
       <ActionsTable initialActions={actions} />

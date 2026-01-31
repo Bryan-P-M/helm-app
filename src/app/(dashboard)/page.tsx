@@ -68,9 +68,9 @@ export default async function DashboardPage() {
           link="/raid"
         >
           <div className="flex gap-2 mt-2">
-            <RagStat label="Red" value={rag?.red ?? 0} color="red" link="/raid?rag=red" />
-            <RagStat label="Amber" value={rag?.amber ?? 0} color="amber" link="/raid?rag=amber" />
-            <RagStat label="Green" value={rag?.green ?? 0} color="green" link="/raid?rag=green" />
+            <RagStat label="Red" value={rag?.red ?? 0} color="red" link="/raid?rag_status=red" />
+            <RagStat label="Amber" value={rag?.amber ?? 0} color="amber" link="/raid?rag_status=amber" />
+            <RagStat label="Green" value={rag?.green ?? 0} color="green" link="/raid?rag_status=green" />
           </div>
         </SummaryCard>
         <SummaryCard
