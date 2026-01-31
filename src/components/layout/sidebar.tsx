@@ -11,6 +11,7 @@ import {
   CheckCircle,
   Calendar,
   Handshake,
+  Users,
   Settings,
   Menu,
 } from "lucide-react";
@@ -29,6 +30,7 @@ const navItems = [
   { name: "Actions", href: "/actions", icon: CheckCircle },
   { name: "Meetings", href: "/meetings", icon: Calendar },
   { name: "Decisions", href: "/decisions", icon: Handshake },
+  { name: "RACI", href: "/raci", icon: Users },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
