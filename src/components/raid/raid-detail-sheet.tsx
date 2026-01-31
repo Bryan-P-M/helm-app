@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import {
   RAG_BADGE_CLASSES, RAID_TYPE_LABELS, RAID_STATUS_LABELS, PRIORITY_BADGE_CLASSES,
 } from "@/lib/constants";
+import { ArrowUpCircle } from "lucide-react";
+import RaidEscalateDialog from "@/components/raid/raid-escalate-dialog";
 import type { RaidItemWithOwner } from "@/lib/types";
 import Link from "next/link";
 
@@ -94,6 +96,14 @@ export default function RaidDetailSheet({
             <Button variant="outline" asChild>
               <Link href={`/actions?source_raid_item_id=${item.id}`}>Create Action</Link>
             </Button>
+            {item.source_level !== "portfolio" && !item.is_escalated && (
+              <RaidEscalateDialog item={item as any}>
+                <Button variant="outline">
+                  <ArrowUpCircle className="mr-2 h-4 w-4" />
+                  Escalate
+                </Button>
+              </RaidEscalateDialog>
+            )}
           </div>
         </div>
       </SheetContent>
