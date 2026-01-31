@@ -17,6 +17,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import DecisionDetailSheet from "./decision-detail-sheet";
 import { DECISION_STATUS_LABELS } from "@/lib/constants";
 import type { DecisionWithDetails, DecisionStatus } from "@/lib/types";
+import ExportCSVButton from "@/components/shared/export-csv-button";
 
 const STATUS_BADGE_CLASSES: Record<DecisionStatus, string> = {
   draft: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
@@ -75,6 +76,25 @@ export default function DecisionsTable({ initialDecisions }: DecisionsTableProps
             Reset
           </Button>
         )}
+        <ExportCSVButton
+          data={filtered.map((d: any) => ({
+            title: d.title,
+            status: d.status,
+            decided_date: d.decision_date ?? "", // Use decision_date as per actual data
+            made_by: d.made_by?.full_name ?? "", // Access full_name from made_by object
+            rationale: d.rationale ?? "",
+            created_at: d.created_at,
+          }))}
+          columns={[
+            { key: "title", header: "Title" },
+            { key: "status", header: "Status" },
+            { key: "decided_date", header: "Decided Date" },
+            { key: "made_by", header: "Made By" },
+            { key: "rationale", header: "Rationale" },
+            { key: "created_at", header: "Created" },
+          ]}
+          filename="helm-decisions-export"
+        />
       </div>
 
       {/* Table */}

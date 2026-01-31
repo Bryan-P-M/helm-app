@@ -18,6 +18,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import MeetingDetailSheet from "./meeting-detail-sheet";
 import { MEETING_STATUS_LABELS, ATTENDEE_ROLE_LABELS } from "@/lib/constants";
 import type { MeetingWithDetails, MeetingStatus } from "@/lib/types";
+import ExportCSVButton from "@/components/shared/export-csv-button";
 
 interface MeetingsTableProps {
   initialMeetings: MeetingWithDetails[];
@@ -174,6 +175,21 @@ export default function MeetingsTable({ initialMeetings }: MeetingsTableProps) {
             Reset
           </Button>
         )}
+        <ExportCSVButton
+          data={filtered.map((m: any) => ({
+            title: m.title,
+            meeting_date: m.meeting_date ?? "",
+            project: m.project?.name ?? "",
+            created_at: m.created_at,
+          }))}
+          columns={[
+            { key: "title", header: "Title" },
+            { key: "meeting_date", header: "Date" },
+            { key: "project", header: "Project" },
+            { key: "created_at", header: "Created" },
+          ]}
+          filename="helm-meetings-export"
+        />
       </div>
 
       {/* Upcoming */}
