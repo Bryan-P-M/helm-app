@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -115,7 +116,8 @@ export default function ProjectsGrid({ initialProjects, workspaceId }: {
           <div className="col-span-full p-8 text-center text-muted-foreground">No projects found.</div>
         )}
         {sortedProjects.map(project => (
-          <Card key={project.id} onClick={() => setSelectedProject(project)} className="hover:shadow-lg transition cursor-pointer">
+          <Link href={"/projects/" + project.id}>
+          <Card key={project.id} className="hover:shadow-lg transition cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>{project.name}</CardTitle>
@@ -130,6 +132,7 @@ export default function ProjectsGrid({ initialProjects, workspaceId }: {
               <div className="text-xs text-right">Updated: {new Date(project.updated_at).toLocaleDateString()}</div>
             </CardContent>
           </Card>
+          </Link>
         ))}
       </div>
       <ProjectDetailSheet project={selectedProject} open={!!selectedProject} onOpenChange={open => !open && setSelectedProject(null)} workspaceId={workspaceId} />
