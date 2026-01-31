@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helm — Market Validation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════
+     RESET & BASE
+     ═══════════════════════════════════════════ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:           #030712;
+    --bg-card:      rgba(17,24,39,0.5);
+    --bg-card-solid:#0b1120;
+    --border:       #1f2937;
+    --border-light: #374151;
+    --text:         #ffffff;
+    --text-muted:   #9ca3af;
+    --text-dim:     #6b7280;
+    --emerald:      #10b981;
+    --emerald-light:#34d399;
+    --emerald-bg:   rgba(16,185,129,0.1);
+    --emerald-border:rgba(16,185,129,0.2);
+    --red:          #ef4444;
+    --amber:        #f59e0b;
+    --font:         'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
+  }
+
+  /* ═══════════════════════════════════════════
+     PAGE / PRINT
+     ═══════════════════════════════════════════ */
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+
+  .slide {
+    width: 297mm;
+    height: 210mm;
+    min-height: 210mm;
+    max-height: 210mm;
+    overflow: hidden;
+    background: var(--bg);
+    padding: 15mm 17mm;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .slide:last-child {
+    page-break-after: auto;
+  }
+
+  /* ═══════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════ */
+  .slide-number {
+    position: absolute;
+    bottom: 28px;
+    right: 64px;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .slide-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--emerald);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  h2 {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-size: 20px;
+    color: var(--text-muted);
+    font-weight: 400;
+    line-height: 1.45;
+    max-width: 680px;
+  }
+
+  .body-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .small-text {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .source {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: auto;
+    padding-top: 12px;
+  }
+
+  .em-green { color: var(--emerald-light); }
+  .em-white { color: var(--text); font-weight: 600; }
+  .em-red   { color: var(--red); }
+  .em-amber { color: var(--amber); }
+
+  /* ═══════════════════════════════════════════
+     LOGO
+     ═══════════════════════════════════════════ */
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--emerald);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 26px;
+    color: var(--bg);
+    flex-shrink: 0;
+  }
+
+  .logo-mark.sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 17px;
+  }
+
+  .logo-text {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* ═══════════════════════════════════════════
+     CARDS
+     ═══════════════════════════════════════════ */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .card-accent {
+    background: var(--emerald-bg);
+    border: 1px solid var(--emerald-border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--emerald-light);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .stat-value.white { color: var(--text); }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    font-weight: 400;
+  }
+
+  /* ═══════════════════════════════════════════
+     GRID HELPERS
+     ═══════════════════════════════════════════ */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+  .grid-5 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 14px; }
+
+  .flex-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex: 1;
+  }
+
+  .flex-grow { flex: 1; }
+  .gap-8  { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .gap-16 { gap: 16px; }
+  .gap-20 { gap: 20px; }
+  .gap-24 { gap: 24px; }
+  .gap-32 { gap: 32px; }
+  .mt-auto { margin-top: auto; }
+  .mb-4  { margin-bottom: 4px; }
+  .mb-8  { margin-bottom: 8px; }
+  .mb-12 { margin-bottom: 12px; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-20 { margin-bottom: 20px; }
+  .mb-24 { margin-bottom: 24px; }
+  .mb-32 { margin-bottom: 32px; }
+
+  /* ═══════════════════════════════════════════
+     TABLE
+     ═══════════════════════════════════════════ */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  table th {
+    background: rgba(16,185,129,0.12);
+    color: var(--emerald-light);
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--emerald-border);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(31,41,55,0.5);
+    color: var(--text-muted);
+    vertical-align: middle;
+  }
+
+  table tr:last-child td { border-bottom: none; }
+
+  table .vendor-name {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════
+     BADGES & PILLS
+     ═══════════════════════════════════════════ */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+
+  .badge-emerald {
+    background: var(--emerald-bg);
+    border: 1px solid var(--emerald-border);
+    color: var(--emerald-light);
+  }
+
+  .badge-red {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.2);
+    color: #f87171;
+  }
+
+  .badge-amber {
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.2);
+    color: #fbbf24;
+  }
+
+  .badge-gray {
+    background: rgba(75,85,99,0.2);
+    border: 1px solid rgba(75,85,99,0.3);
+    color: var(--text-muted);
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .dot-green { background: var(--emerald); }
+  .dot-red   { background: var(--red); }
+  .dot-amber { background: var(--amber); }
+
+  /* ═══════════════════════════════════════════
+     DIVIDERS & PIPES
+     ═══════════════════════════════════════════ */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  .pipe {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .pipe-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .pipe-arrow {
+    color: var(--text-dim);
+    font-size: 16px;
+  }
+
+  /* ═══════════════════════════════════════════
+     COMPARISON COLUMNS
+     ═══════════════════════════════════════════ */
+  .compare-col {
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .compare-col.exists {
+    background: rgba(239,68,68,0.05);
+    border: 1px solid rgba(239,68,68,0.15);
+  }
+
+  .compare-col.gap {
+    background: var(--emerald-bg);
+    border: 1px solid var(--emerald-border);
+  }
+
+  .compare-col h3 {
+    margin-bottom: 14px;
+  }
+
+  .compare-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .compare-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 14px;
+  }
+
+  /* ═══════════════════════════════════════════
+     TIER VISUAL
+     ═══════════════════════════════════════════ */
+  .tier {
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .tier-enterprise {
+    background: rgba(239,68,68,0.06);
+    border: 1px solid rgba(239,68,68,0.15);
+  }
+
+  .tier-generic {
+    background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.15);
+  }
+
+  .tier-helm {
+    background: var(--emerald-bg);
+    border: 2px solid var(--emerald-border);
+  }
+
+  .tier-price {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .tier-label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .tier-names {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .tier-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════
+     CONFIDENCE GRADE
+     ═══════════════════════════════════════════ */
+  .grade-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .grade-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    min-width: 48px;
+  }
+
+  .grade-label.high { color: var(--emerald-light); }
+  .grade-label.med  { color: var(--amber); }
+  .grade-label.low  { color: #f87171; }
+
+  .grade-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     TIMELINE
+     ═══════════════════════════════════════════ */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 24px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    display: flex;
+    gap: 16px;
+    padding: 10px 0;
+    position: relative;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -24px;
+    top: 15px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--emerald);
+    border: 2px solid var(--bg);
+  }
+
+  .timeline-content h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .timeline-content p {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .timeline-date {
+    font-size: 12px;
+    color: var(--emerald-light);
+    font-weight: 600;
+    min-width: 110px;
+    flex-shrink: 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     QUOTE
+     ═══════════════════════════════════════════ */
+  .pull-quote {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.5;
+    padding: 20px 24px;
+    border-left: 3px solid var(--emerald);
+    background: var(--bg-card);
+    border-radius: 0 12px 12px 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     HEADER BAR (per slide)
+     ═══════════════════════════════════════════ */
+  .slide-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-shrink: 0;
+  }
+
+  .slide-header .logo {
+    gap: 8px;
+  }
+
+  .slide-header .logo-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    font-size: 15px;
+  }
+
+  .slide-header .logo-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+
+  /* ═══════════════════════════════════════════
+     VENDOR TABLE COMPACT
+     ═══════════════════════════════════════════ */
+  .vendor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 32px;
+  }
+
+  .vendor-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px;
+    border-radius: 6px;
+    background: rgba(17,24,39,0.3);
+    font-size: 13px;
+  }
+
+  .vendor-row .vname {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .vendor-row .vstatus {
+    font-size: 15px;
+  }
+
+  .vendor-row.highlight {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.2);
+  }
+
+  .vendor-row.highlight .vname {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════
+     BARRIER CARDS
+     ═══════════════════════════════════════════ */
+  .barrier-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .barrier-card h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--emerald-light);
+    margin-bottom: 4px;
+  }
+
+  .barrier-card p {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+
+  /* ═══════════════════════════════════════════
+     COMPLAINT THEME CARD
+     ═══════════════════════════════════════════ */
+  .theme-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .theme-count {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--emerald-light);
+    line-height: 1;
+    flex-shrink: 0;
+    min-width: 32px;
+    text-align: center;
+  }
+
+  .theme-body h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .theme-body p {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* ═══════════════════════════════════════════
+     PILLAR
+     ═══════════════════════════════════════════ */
+  .pillar {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .pillar-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--emerald);
+    opacity: 0.5;
+    line-height: 1;
+    min-width: 28px;
+    flex-shrink: 0;
+  }
+
+  .pillar h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .pillar p {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+
+  /* ═══════════════════════════════════════════
+     JOURNEY BAR
+     ═══════════════════════════════════════════ */
+  .journey {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 28px;
+  }
+
+  .journey-step {
+    flex: 1;
+    text-align: center;
+    padding: 14px 8px;
+    position: relative;
+  }
+
+  .journey-step .grade {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .journey-step .glabel {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .journey-arrow {
+    font-size: 24px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  /* ═══════════════════════════════════════════
+     FINAL SLIDE CTA
+     ═══════════════════════════════════════════ */
+  .cta-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .cta-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .cta-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.45;
+  }
+
+  .cta-text span {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     SLIDE 1 — TITLE
+     ════════════════════════════════════════════ -->
+<div class="slide" style="justify-content: center; align-items: center; text-align: center;">
+  <div style="display:flex; flex-direction:column; align-items:center; gap:28px;">
+    <div class="logo" style="gap:14px;">
+      <div class="logo-mark" style="width:56px;height:56px;font-size:30px;border-radius:14px;">H</div>
+      <span class="logo-text" style="font-size:34px;">Helm</span>
+    </div>
+
+    <div>
+      <div class="slide-tag" style="margin-bottom:14px;">Market Validation</div>
+      <h1 style="font-size:38px; max-width:700px; margin-bottom:16px;">
+        Meeting-to-Governance Traceability:<br>
+        <span class="em-green">The Gap Nobody Has Filled</span>
+      </h1>
+      <p class="subtitle" style="margin:0 auto;">
+        January 2026 &nbsp;·&nbsp; Desk Research Phase
+      </p>
+    </div>
+  </div>
+
+  <p class="small-text" style="position:absolute; bottom:32px; left:0; right:0; text-align:center; color:var(--text-dim);">
+    Based on 12 research agents &nbsp;·&nbsp; 100+ sources &nbsp;·&nbsp; 16 PPM vendors analysed
+  </p>
+  <span class="slide-number">01</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 2 — THE PROBLEM
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">The Problem</div>
+      <h2>The PMO Paradox</h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <p class="subtitle mb-32" style="max-width:620px;">
+    Organisations invest in governance structures — then starve them of usable tooling.
+  </p>
+
+  <div class="grid-4" style="flex:1; align-content:start;">
+    <div class="stat-card">
+      <div class="stat-value">82%</div>
+      <div class="stat-label">of organisations<br>have a PMO</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:#f87171;">37%</div>
+      <div class="stat-label">are satisfied with their<br>PM maturity</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:#fbbf24;">42%</div>
+      <div class="stat-label">spend a full working day<br>manually collating reports</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value white" style="font-size:32px;">~£1.6T</div>
+      <div class="stat-label">annual waste from<br>poor project management</div>
+    </div>
+  </div>
+
+  <div class="pull-quote" style="margin-top:auto;">
+    The tools exist for tracking tasks. The tools don't exist for governing delivery.
+  </div>
+
+  <p class="source">Sources: Wellingtone State of PM 2025, PMI Pulse of the Profession</p>
+  <span class="slide-number">02</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 3 — THE GAP EXPLAINED
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">The Gap</div>
+      <h2>Meeting-to-Task exists.<br><span class="em-green">Meeting-to-Governance doesn't.</span></h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <div class="grid-2" style="flex:1; gap:24px;">
+    <div class="compare-col exists">
+      <h3 style="color:#f87171;">What exists today</h3>
+      <p class="body-text mb-16">Otter, Fireflies, Teams extract action items from meetings and push them as flat tasks.</p>
+      <div class="compare-item"><span class="compare-icon">→</span><span>Freeform action items</span></div>
+      <div class="compare-item"><span class="compare-icon">→</span><span>Assignee + due date</span></div>
+      <div class="compare-item"><span class="compare-icon">→</span><span>Pushed to Asana, Jira, Planner</span></div>
+      <div class="compare-item"><span class="compare-icon">→</span><span>No typing, no classification</span></div>
+      <div class="compare-item"><span class="compare-icon">→</span><span>No approval workflow</span></div>
+      <div class="compare-item"><span class="compare-icon">→</span><span>No audit trail</span></div>
+      <div style="margin-top:auto; padding-top:16px;">
+        <span class="badge badge-red"><span class="dot dot-red"></span>Tasks only</span>
+      </div>
+    </div>
+
+    <div class="compare-col gap">
+      <h3 style="color:var(--emerald-light);">What nobody does</h3>
+      <p class="body-text mb-16">Extract <strong style="color:var(--text);">governance artefacts</strong> from meetings and route them through approval workflows.</p>
+      <div class="compare-item"><span class="compare-icon" style="color:var(--emerald);">✓</span><span>Typed RAID entries (Risk, Assumption, Issue, Dependency)</span></div>
+      <div class="compare-item"><span class="compare-icon" style="color:var(--emerald);">✓</span><span>Formal decision records with rationale</span></div>
+      <div class="compare-item"><span class="compare-icon" style="color:var(--emerald);">✓</span><span>Escalation triggers with thresholds</span></div>
+      <div class="compare-item"><span class="compare-icon" style="color:var(--emerald);">✓</span><span>Classified against project taxonomy</span></div>
+      <div class="compare-item"><span class="compare-icon" style="color:var(--emerald);">✓</span><span>Human review gate before commit</span></div>
+      <div class="compare-item"><span class="compare-icon" style="color:var(--emerald);">✓</span><span>Full audit trail + ownership</span></div>
+      <div style="margin-top:auto; padding-top:16px;">
+        <span class="badge badge-emerald"><span class="dot dot-green"></span>Helm's white space</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px; padding:14px 24px;">
+    <p class="body-text" style="text-align:center;">
+      <strong style="color:var(--text);">The distinction:</strong>&nbsp;
+      A task is a to-do. A RAID entry is a governed, auditable record with ownership, review dates, and escalation paths.
+    </p>
+  </div>
+  <span class="slide-number">03</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 4 — 16 VENDORS, ONE COLUMN
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">The Evidence</div>
+      <h2>We checked every major PPM vendor</h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <p class="subtitle mb-24">Meeting-to-Governance Traceability capability across 16 vendors:</p>
+
+  <div class="vendor-grid" style="flex:1;">
+    <div class="vendor-row"><span class="vname">Planview</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Celoxis</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">ServiceNow SPM</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Completix</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Clarity PPM</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Tempo (Jira)</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Planisware</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Targetprocess</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Smartsheet</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Aha!</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Monday.com</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Productboard</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Asana</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">Sciforma</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row"><span class="vname">KeyedIn</span><span class="vstatus">❌</span></div>
+    <div class="vendor-row highlight"><span class="vname">Microsoft ⚠️</span><span class="vstatus" style="font-size:12px; color:var(--amber);">Tasks only — not governance</span></div>
+  </div>
+
+  <div class="card-accent" style="margin-top:20px; padding:16px 24px; text-align:center;">
+    <p style="font-size:18px; font-weight:700; color:var(--text);">
+      Zero vendors offer governance-grade meeting extraction
+    </p>
+  </div>
+
+  <p class="small-text" style="margin-top:8px; text-align:center;">Full 10-capability matrix covering RAID, escalation, decision logs, P3O, reporting, AI, and API available in appendix</p>
+  <span class="slide-number">04</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 5 — THE MARKET
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">Market Size</div>
+      <h2>£5.2 Billion <span class="em-green">and Growing</span></h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <div class="grid-2" style="flex:1; gap:28px;">
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div class="stat-card" style="text-align:left;">
+        <div class="stat-label mb-4">Global PPM Software (IDC 2023)</div>
+        <div class="stat-value" style="text-align:left; font-size:48px;">~£5.2B</div>
+        <div class="small-text" style="margin-top:4px;">$6.5B · vendor-reported revenue, bottom-up methodology</div>
+      </div>
+
+      <div class="grid-2" style="gap:12px;">
+        <div class="stat-card">
+          <div class="stat-value" style="font-size:28px;">~£5.9B</div>
+          <div class="stat-label">2024 estimate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="font-size:28px;">~12%</div>
+          <div class="stat-label">CAGR</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:16px 20px;">
+        <div class="small-text">
+          <strong style="color:var(--text);">Why IDC?</strong>
+          Vendor-reported revenue (bottom-up) — most defensible methodology.
+          Cross-verified against Mordor Intelligence, Grand View Research, MarketsandMarkets, and Fortune Business Insights (range: £4.0B–£6.2B).
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div class="stat-card" style="text-align:left;">
+        <div class="stat-label mb-4">Mid-Market Share (~40%)</div>
+        <div class="stat-value" style="text-align:left; font-size:48px;">~£2.1B</div>
+        <div class="small-text" style="margin-top:4px;">Where governance tooling is weakest</div>
+      </div>
+
+      <div class="stat-card" style="text-align:left;">
+        <div class="stat-label mb-8">UK Serviceable Addressable Market (SAM)</div>
+        <div class="stat-value" style="text-align:left; font-size:36px;">£43–53M<span style="font-size:16px; font-weight:400; color:var(--text-muted);"> /year</span></div>
+        <div class="small-text" style="margin-top:6px;">
+          ~9,000–11,000 addressable UK firms (50–500 employees) × £400/mo ARPU<br>
+          Realistic range after sensitivity analysis: <strong style="color:var(--text);">£25M–£55M</strong>
+        </div>
+      </div>
+
+      <div class="card" style="padding:16px 20px;">
+        <div class="small-text">
+          <strong style="color:var(--text);">SAM confidence: LOW-MEDIUM</strong> — three multiplied assumptions with compounding uncertainty.
+          10-scenario sensitivity modelled (£10M–£116M). Primary research needed to firm up.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="source">Source: IDC PPM Forecast (2023), UK BPE 2024, Mordor Intelligence, Wellingtone</p>
+  <span class="slide-number">05</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 6 — MID-MARKET SWEET SPOT
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">Pricing Gap</div>
+      <h2>Too expensive or too basic — <span class="em-green">nothing in between</span></h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <div class="grid-3" style="flex:1; gap:24px; align-items:stretch;">
+    <div class="tier tier-enterprise" style="justify-content:center;">
+      <div class="tier-label" style="color:#f87171;">Enterprise PPM</div>
+      <div class="tier-price" style="color:#f87171;">£40–160+</div>
+      <div class="tier-desc">/user/month</div>
+      <div class="divider" style="background:rgba(239,68,68,0.15);"></div>
+      <div class="tier-names">ServiceNow · Planview · Clarity · Planisware</div>
+      <div style="margin-top:12px;">
+        <span class="badge badge-red" style="font-size:11px;">Overkill for mid-market</span>
+      </div>
+      <div class="body-text" style="margin-top:12px; font-size:12px;">
+        Full governance, but designed for 5,000+ employee organisations. Implementation cycles of 6–18 months. Buyers need dedicated PPM admin teams.
+      </div>
+    </div>
+
+    <div class="tier tier-helm" style="justify-content:center; position:relative;">
+      <div style="position:absolute; top:-1px; left:50%; transform:translateX(-50%); background:var(--emerald); color:var(--bg); font-size:10px; font-weight:700; padding:3px 14px; border-radius:0 0 8px 8px; letter-spacing:0.08em; text-transform:uppercase;">The Gap</div>
+      <div class="tier-label" style="color:var(--emerald-light); margin-top:12px;">Helm</div>
+      <div class="tier-price" style="color:var(--emerald-light);">£16–36</div>
+      <div class="tier-desc">/user/month</div>
+      <div class="divider" style="background:var(--emerald-border);"></div>
+      <div class="tier-names" style="color:var(--emerald-light);">Governance-native · Mid-market priced</div>
+      <div style="margin-top:12px;">
+        <span class="badge badge-emerald" style="font-size:11px;">Purpose-built for this gap</span>
+      </div>
+      <div class="body-text" style="margin-top:12px; font-size:12px;">
+        RAID, decisions, meeting traceability, P3O hierarchy — all native. No enterprise overhead. Deploy in weeks, not months.
+      </div>
+    </div>
+
+    <div class="tier tier-generic" style="justify-content:center;">
+      <div class="tier-label" style="color:#fbbf24;">Generic Work Management</div>
+      <div class="tier-price" style="color:#fbbf24;">£7–24</div>
+      <div class="tier-desc">/user/month</div>
+      <div class="divider" style="background:rgba(245,158,11,0.15);"></div>
+      <div class="tier-names">Monday.com · Asana · Smartsheet</div>
+      <div style="margin-top:12px;">
+        <span class="badge badge-amber" style="font-size:11px;">No governance capabilities</span>
+      </div>
+      <div class="body-text" style="margin-top:12px; font-size:12px;">
+        Great for task management. RAID is a custom field hack. No decision logging. No P3O hierarchy. No audit trails. "Managing the tool, not the project."
+      </div>
+    </div>
+  </div>
+
+  <span class="slide-number">06</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 7 — MICROSOFT
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">Closest Competitor</div>
+      <h2>Even Microsoft <span class="em-green">only gets halfway</span></h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <div style="flex:1; display:flex; flex-direction:column; gap:20px;">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:24%;">Capability</th>
+          <th style="width:38%;">Microsoft (Copilot Facilitator + PMA)</th>
+          <th style="width:38%;">Helm (Planned)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="vendor-name">Output type</td>
+          <td>Generic Planner tasks</td>
+          <td style="color:var(--emerald-light);">Typed RAID entries, decision records, actions</td>
+        </tr>
+        <tr>
+          <td class="vendor-name">Risk identification</td>
+          <td>Prompt-based text response</td>
+          <td style="color:var(--emerald-light);">Structured risk register (severity, probability, owner)</td>
+        </tr>
+        <tr>
+          <td class="vendor-name">Decision capture</td>
+          <td>Freeform text in Loop notes</td>
+          <td style="color:var(--emerald-light);">First-class entity (rationale, stakeholders, audit trail)</td>
+        </tr>
+        <tr>
+          <td class="vendor-name">Governance reporting</td>
+          <td>Task-level status reports</td>
+          <td style="color:var(--emerald-light);">Board-ready governance packs from structured data</td>
+        </tr>
+        <tr>
+          <td class="vendor-name">P3O linkage</td>
+          <td>Flat portfolios (no Programme layer)</td>
+          <td style="color:var(--emerald-light);">Portfolio → Programme → Project</td>
+        </tr>
+        <tr>
+          <td class="vendor-name">Effective cost with AI</td>
+          <td>£32–68/user/month</td>
+          <td style="color:var(--emerald-light);">Target £16–36/user/month</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pull-quote">
+      400M M365 seats mean the "good enough" is on every desk. Helm complements — it doesn't compete.
+    </div>
+
+    <div style="display:flex; gap:16px; align-items:center;">
+      <span class="badge badge-amber" style="font-size:13px; padding:6px 16px;">
+        <span class="dot dot-amber"></span>
+        Threat Level: MEDIUM-HIGH
+      </span>
+      <span class="body-text">Distribution advantage, not capability advantage. Helm integrates with M365 — not against it.</span>
+    </div>
+  </div>
+
+  <span class="slide-number">07</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 8 — MEETING AI WON'T PIVOT
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">Meeting AI Landscape</div>
+      <h2>Otter, Fireflies, Fathom — <span class="em-green">Partners, Not Threats</span></h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <div class="grid-3 mb-20" style="gap:16px;">
+    <div class="stat-card">
+      <div class="stat-label mb-4" style="color:var(--text);">Otter.ai</div>
+      <div class="stat-value" style="font-size:28px;">$100M</div>
+      <div class="stat-label">ARR · 35M users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label mb-4" style="color:var(--text);">Fireflies.ai</div>
+      <div class="stat-value" style="font-size:28px;">$1B</div>
+      <div class="stat-label">valuation · 20M+ users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label mb-4" style="color:var(--text);">Fathom</div>
+      <div class="stat-value" style="font-size:28px;">90×</div>
+      <div class="stat-label">growth · Series A ($17M)</div>
+    </div>
+  </div>
+
+  <p class="body-text mb-16" style="font-weight:500; color:var(--text);">Four barriers to governance pivot:</p>
+
+  <div class="grid-4" style="gap:14px;">
+    <div class="barrier-card">
+      <h4>Wrong Data Model</h4>
+      <p>Transcript → summary → task. Governance needs typed entities with relationships and workflow state.</p>
+    </div>
+    <div class="barrier-card">
+      <h4>Wrong Buyer</h4>
+      <p>Sales managers and team leads. PMO directors are a different persona, different procurement.</p>
+    </div>
+    <div class="barrier-card">
+      <h4>Wrong Incentive</h4>
+      <p>$100M ARR on meeting productivity. Why chase a niche governance SAM?</p>
+    </div>
+    <div class="barrier-card">
+      <h4>Wrong DNA</h4>
+      <p>Media/AI companies. Governance is enterprise software — different engineering discipline.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:auto; display:flex; gap:20px; align-items:center;">
+    <span class="badge badge-emerald" style="font-size:13px; padding:6px 16px;">
+      <span class="dot dot-green"></span>
+      Threat Level: LOW
+    </span>
+    <span class="body-text" style="flex:1;">18–36 month build even if they decided today. Zero roadmap signals for governance features.</span>
+    <div class="card" style="padding:10px 18px; flex-shrink:0;">
+      <p class="small-text" style="color:var(--emerald-light); font-style:normal; font-weight:600;">Strategy: Consume their transcripts, don't compete with them</p>
+    </div>
+  </div>
+
+  <span class="slide-number">08</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 9 — REGULATORY TAILWINDS
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">Regulatory Drivers</div>
+      <h2>Compliance Is <span class="em-green">Forcing the Issue</span></h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <div class="grid-2 mb-24" style="gap:24px;">
+    <div class="card" style="padding:28px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+        <span class="badge badge-red" style="font-size:11px;">MANDATORY</span>
+        <span style="font-size:13px; font-weight:600; color:var(--text);">Deadline passed: March 2025</span>
+      </div>
+      <h3 style="margin-bottom:8px;">FCA PS21/3</h3>
+      <p class="body-text" style="font-size:15px; margin-bottom:12px;">Operational Resilience</p>
+      <p class="body-text">
+        UK financial services firms must maintain continuous, auditable governance of their operational resilience programmes. Requires documented impact tolerances, scenario testing, and board reporting.
+      </p>
+      <div style="margin-top:16px;">
+        <span class="badge badge-emerald" style="font-size:11px;">Driver: HIGH</span>
+      </div>
+    </div>
+
+    <div class="card" style="padding:28px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+        <span class="badge badge-red" style="font-size:11px;">MANDATORY</span>
+        <span style="font-size:13px; font-weight:600; color:var(--text);">Effective: January 2025</span>
+      </div>
+      <h3 style="margin-bottom:8px;">EU DORA</h3>
+      <p class="body-text" style="font-size:15px; margin-bottom:12px;">Digital Operational Resilience Act</p>
+      <p class="body-text">
+        Article 6 requires a documented ICT risk management framework. Financial entities must maintain risk registers, incident reporting, and third-party oversight — all auditable.
+      </p>
+      <div style="margin-top:16px;">
+        <span class="badge badge-emerald" style="font-size:11px;">Driver: HIGH</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-accent" style="padding:24px 28px;">
+    <div style="display:flex; gap:28px; align-items:center;">
+      <div style="flex-shrink:0;">
+        <div class="slide-tag" style="margin-bottom:6px;">Isle of Man Beachhead</div>
+        <div style="font-size:20px; font-weight:700;">Financial Services = 27% of IoM Economy</div>
+      </div>
+      <div class="body-text" style="flex:1;">
+        200–400 regulated entities, typically 50–500 employees — directly in Helm's sweet spot.
+        IOMFSA governance codes apply. Small, reachable market ideal for initial validation and reference customers.
+      </div>
+    </div>
+  </div>
+
+  <div class="pull-quote" style="margin-top:auto;">
+    Regulated organisations MUST have auditable governance. Most don't have the tooling.
+  </div>
+
+  <span class="slide-number">09</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 10 — USER COMPLAINTS
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">User Evidence</div>
+      <h2>40 Sourced Complaints, <span class="em-green">5 Themes</span></h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:12px; flex:1;">
+    <div class="theme-card">
+      <div class="theme-count">9</div>
+      <div class="theme-body">
+        <h4>Missing Portfolio / Programme Visibility</h4>
+        <p>"Asana for portfolio management lacks robust work intake, prioritisation scoring, enterprise resource capacity planning, portfolio-level risk management"</p>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-count">9</div>
+      <div class="theme-body">
+        <h4>No Governance Features (RAID, Audit)</h4>
+        <p>"The main request is to have some form of RAID logging" — Reddit r/projectmanagement</p>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-count">9</div>
+      <div class="theme-body">
+        <h4>Reporting Limitations</h4>
+        <p>"Time-tracking and reporting tools are quite limited" — 42% spend a full day on manual reports</p>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-count">8</div>
+      <div class="theme-body">
+        <h4>Multi-Project Dependency Failures</h4>
+        <p>"Sheets crawl once you hit a few hundred rows with dependencies" — Reddit</p>
+      </div>
+    </div>
+
+    <div class="theme-card">
+      <div class="theme-count">5</div>
+      <div class="theme-body">
+        <h4>UX Complexity at Scale</h4>
+        <p>"Monday can be infuriatingly complex to use" — SmartTask</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-accent" style="padding:14px 24px; margin-top:12px; text-align:center;">
+    <p style="font-size:15px; font-weight:600; color:var(--text);">
+      This isn't hypothetical demand. Users are asking for exactly what Helm builds.
+    </p>
+  </div>
+
+  <p class="source">Sourced from Reddit, G2, Capterra, SoftwareReviews, Acuity PPM, SmartTask, CPO Club — full catalogue in research appendix</p>
+  <span class="slide-number">10</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 11 — WHAT HELM BUILDS
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">The Product</div>
+      <h2>From organisational anxiety<br><span class="em-green">to operational confidence</span></h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <div class="mb-24">
+    <p class="body-text mb-12" style="font-weight:500; color:var(--text); font-size:13px;">The AI Governance Pipeline:</p>
+    <div class="card" style="padding:16px 24px;">
+      <div class="pipe">
+        <span class="pipe-step" style="color:var(--text-muted);">🎙 Meeting</span>
+        <span class="pipe-arrow">→</span>
+        <span class="pipe-step" style="color:var(--text-muted);">📝 Transcription</span>
+        <span class="pipe-arrow">→</span>
+        <span class="pipe-step" style="color:var(--emerald-light);">🤖 AI Extraction</span>
+        <span class="pipe-arrow">→</span>
+        <span class="pipe-step" style="color:var(--amber);">👤 Human Review Gate</span>
+        <span class="pipe-arrow">→</span>
+        <span class="pipe-step" style="color:var(--emerald-light);">📋 Governed RAID / Decision</span>
+        <span class="pipe-arrow">→</span>
+        <span class="pipe-step" style="color:var(--emerald-light);">📊 Dashboard</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="body-text mb-16" style="font-weight:500; color:var(--text); font-size:13px;">Four Pillars:</p>
+
+  <div class="grid-2" style="gap:14px; flex:1;">
+    <div class="pillar">
+      <div class="pillar-num">1</div>
+      <div>
+        <h4>Meeting-to-Governance Traceability</h4>
+        <p>The white space. AI extracts structured RAID items, decision records, and escalation triggers from meeting transcripts — routed through approval workflows.</p>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-num">2</div>
+      <div>
+        <h4>P3O-Native Design</h4>
+        <p>Portfolio → Programme → Project hierarchy is structural, not cosmetic. Only 4–5 enterprise vendors support this. None at mid-market pricing.</p>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-num">3</div>
+      <div>
+        <h4>First-Class Decision Logging</h4>
+        <p>Decisions are entities — with rationale, stakeholders, review dates, and audit trails. Not notes buried in meeting minutes.</p>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-num">4</div>
+      <div>
+        <h4>Governance AI, Not Productivity AI</h4>
+        <p>Competitors focus AI on content generation and resource optimisation. Helm focuses AI on governance intelligence — risk detection, compliance, accountability.</p>
+      </div>
+    </div>
+  </div>
+
+  <span class="slide-number">11</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 12 — RESEARCH RIGOUR
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">Methodology</div>
+      <h2>This Isn't a Hunch</h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <p class="subtitle mb-24" style="max-width:560px;">Three rounds of externally-reviewed desk research, improved with each critique.</p>
+
+  <div class="journey mb-24">
+    <div class="journey-step" style="background:rgba(239,68,68,0.06); border-radius:12px 0 0 12px; border:1px solid rgba(239,68,68,0.15);">
+      <div class="grade" style="color:#f87171;">C+</div>
+      <div class="glabel">Round 1 · Initial draft</div>
+    </div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-step" style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.15);">
+      <div class="grade" style="color:#fbbf24;">B+</div>
+      <div class="glabel">Round 2 · Revised</div>
+    </div>
+    <div class="journey-arrow">→</div>
+    <div class="journey-step" style="background:var(--emerald-bg); border-radius:0 12px 12px 0; border:1px solid var(--emerald-border);">
+      <div class="grade" style="color:var(--emerald-light);">A-</div>
+      <div class="glabel">Round 3 · Final</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="gap:24px; flex:1;">
+    <div>
+      <p class="body-text mb-12" style="font-weight:500; color:var(--text); font-size:13px;">Research Stats:</p>
+      <div style="display:grid; grid-template-columns:auto 1fr; gap:6px 20px; font-size:13px;">
+        <span style="color:var(--emerald-light); font-weight:700;">12</span><span class="body-text">research sub-agents dispatched</span>
+        <span style="color:var(--emerald-light); font-weight:700;">100+</span><span class="body-text">unique sources cited</span>
+        <span style="color:var(--emerald-light); font-weight:700;">16 + 3</span><span class="body-text">PPM vendors + meeting AI analysed</span>
+        <span style="color:var(--emerald-light); font-weight:700;">6</span><span class="body-text">industry surveys referenced</span>
+        <span style="color:var(--emerald-light); font-weight:700;">40</span><span class="body-text">user complaints sourced</span>
+        <span style="color:var(--emerald-light); font-weight:700;">48h</span><span class="body-text">calendar time, 3 rounds</span>
+        <span style="color:var(--emerald-light); font-weight:700;">220KB</span><span class="body-text">across 11 specialist documents</span>
+      </div>
+    </div>
+
+    <div>
+      <p class="body-text mb-12" style="font-weight:500; color:var(--text); font-size:13px;">Confidence Grades:</p>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div class="grade-bar">
+          <span class="grade-label high">HIGH</span>
+          <span class="grade-desc">Market size ~£5.2–5.9B (IDC vendor-reported)</span>
+        </div>
+        <div class="grade-bar">
+          <span class="grade-label high">HIGH</span>
+          <span class="grade-desc">Mid-market underserved for governance (40 complaints + surveys)</span>
+        </div>
+        <div class="grade-bar">
+          <span class="grade-label high">HIGH</span>
+          <span class="grade-desc">Meeting-to-governance is white space (❌ across 16 vendors)</span>
+        </div>
+        <div class="grade-bar">
+          <span class="grade-label high">HIGH</span>
+          <span class="grade-desc">Regulatory drivers force tool adoption (FCA/DORA mandatory)</span>
+        </div>
+        <div class="grade-bar">
+          <span class="grade-label med">MED</span>
+          <span class="grade-desc">AI is a top buyer priority (82% expect impact — not "#1")</span>
+        </div>
+        <div class="grade-bar">
+          <span class="grade-label low">LOW-M</span>
+          <span class="grade-desc">SAM £43–53M (compounding assumptions, needs primary research)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pull-quote" style="margin-top:auto;">
+    "Investment-grade desk research" — external reviewer
+  </div>
+
+  <span class="slide-number">12</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 13 — WHAT'S NEXT
+     ════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div>
+      <div class="slide-tag">Next Steps</div>
+      <h2>From Desk Research <span class="em-green">to Market Contact</span></h2>
+    </div>
+    <div class="logo"><div class="logo-mark sm">H</div><span class="logo-text">Helm</span></div>
+  </div>
+
+  <p class="subtitle mb-32">The desk research says yes. Now we ask the market directly.</p>
+
+  <div style="flex:1; display:flex; gap:40px;">
+    <div class="timeline" style="flex:1;">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-date">w/c 3 Feb 2026</div>
+        <div class="timeline-content">
+          <h4>LinkedIn Polls</h4>
+          <p>3 targeted polls reaching PMO professionals. Test demand signal for meeting-to-governance traceability, RAID tooling gaps, and report automation pain.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-date">Feb–March 2026</div>
+        <div class="timeline-content">
+          <h4>Discovery Interviews</h4>
+          <p>10–20 mid-market PMO leads in financial services. Validate governance needs filter, meeting pain, and willingness to adopt.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-date">Bundled</div>
+        <div class="timeline-content">
+          <h4>Van Westendorp Pricing</h4>
+          <p>Embedded in discovery interviews. Validate £16–36/user/month target and establish price sensitivity curves.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-date">~1 week</div>
+        <div class="timeline-content">
+          <h4>IoM Beachhead Validation</h4>
+          <p>Pull IOMFSA register, filter by size (50–500 employees), identify 5–10 target organisations for initial discovery.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:280px; flex-shrink:0; display:flex; flex-direction:column; gap:16px;">
+      <div class="card" style="padding:20px;">
+        <h3 class="mb-8" style="font-size:14px;">What This Resolves</h3>
+        <div style="display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--text-muted);">
+          <div>✓&nbsp; SAM governance needs filter (35–45%)</div>
+          <div>✓&nbsp; SAM sector filter (60%)</div>
+          <div>✓&nbsp; ARPU validation (£400/mo)</div>
+          <div>✓&nbsp; Meeting→governance as purchase driver</div>
+          <div>✓&nbsp; IoM beachhead viability</div>
+        </div>
+      </div>
+
+      <div class="card-accent" style="padding:20px;">
+        <h3 class="mb-8" style="font-size:14px; color:var(--emerald-light);">Target Outcome</h3>
+        <p class="body-text" style="font-size:12px;">
+          Upgrade SAM confidence from LOW-MEDIUM to MEDIUM-HIGH.
+          Collect 3–5 letter-of-intent signals from potential early adopters.
+          Move overall validation grade from A- to A.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <span class="slide-number">13</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SLIDE 14 — THE OPPORTUNITY
+     ════════════════════════════════════════════ -->
+<div class="slide" style="justify-content: center;">
+  <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:36px; max-width:800px; margin:0 auto;">
+    <div>
+      <div class="slide-tag" style="margin-bottom:14px;">The Opportunity</div>
+      <h1 style="font-size:42px;">
+        The Gap Is Real.<br>
+        <span class="em-green">The Timing Is Now.</span>
+      </h1>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:18px; text-align:left; width:100%; max-width:660px;">
+      <div class="cta-point">
+        <span class="cta-icon">❌</span>
+        <span class="cta-text">Across 16 vendors — nobody fills this gap. <span>Meeting-to-governance traceability is uncontested white space.</span></span>
+      </div>
+      <div class="cta-point">
+        <span class="cta-icon">⚖️</span>
+        <span class="cta-text">FCA and DORA are forcing tool adoption <span>in regulated mid-market organisations — right now.</span></span>
+      </div>
+      <div class="cta-point">
+        <span class="cta-icon">🏁</span>
+        <span class="cta-text">First mover in meeting-to-governance <span>wins the category before incumbents wake up.</span></span>
+      </div>
+    </div>
+
+    <div class="divider" style="max-width:400px;"></div>
+
+    <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+      <div class="logo" style="gap:12px;">
+        <div class="logo-mark" style="width:44px;height:44px;font-size:24px;border-radius:11px;">H</div>
+        <span class="logo-text" style="font-size:26px;">Helm</span>
+      </div>
+      <p style="font-size:18px; color:var(--text-muted); font-weight:400;">
+        Governance infrastructure for delivery teams.
+      </p>
+    </div>
+  </div>
+
+  <span class="slide-number">14</span>
+</div>
+
+</body>
+</html>

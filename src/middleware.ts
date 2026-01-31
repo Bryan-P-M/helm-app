@@ -29,21 +29,35 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh the auth token
-  await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+
+  const authRoutes = ['/login', '/signup', '/callback'];
+  const isAuthRoute = authRoutes.includes(request.nextUrl.pathname);
+
+  // Everything except auth routes and static assets is protected
+  const isProtectedRoute = !isAuthRoute && !request.nextUrl.pathname.startsWith('/_next');
+
+  if (isProtectedRoute && !session) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/login';
+    redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (isAuthRoute && session) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
 
   return supabaseResponse
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files
-     */
+    '/(dashboard)(.*)',
+    '/login',
+    '/signup',
+    '/callback',
+    // Exclude static files and images
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

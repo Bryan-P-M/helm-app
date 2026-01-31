@@ -1,0 +1,132 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select, SelectItem, SelectContent, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { RAID_TYPE_OPTIONS, RAG_OPTIONS, PRIORITY_OPTIONS } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/client";
+import type { RaidType, RagStatus, Priority } from "@/lib/types";
+
+export default function RaidCreateDialog({
+  workspaceId,
+  projectId,
+}: {
+  workspaceId: string;
+  projectId?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    type: "risk" as RaidType,
+    title: "",
+    description: "",
+    priority: "medium" as Priority,
+    rag_status: "amber" as RagStatus,
+    due_date: "",
+  });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const supabase = createClient();
+      const { error: insertError } = await supabase
+        .from("raid_items")
+        .insert([{
+          workspace_id: workspaceId,
+          project_id: projectId ?? null,
+          type: form.type,
+          title: form.title,
+          description: form.description || null,
+          priority: form.priority,
+          rag_status: form.rag_status,
+          due_date: form.due_date || null,
+          status: "open",
+          source_level: "project",
+        }]);
+
+      if (insertError) throw insertError;
+
+      setOpen(false);
+      setForm({ type: "risk", title: "", description: "", priority: "medium", rag_status: "amber", due_date: "" });
+      // Refresh page to show new item
+      window.location.reload();
+    } catch (err: any) {
+      setError(err.message || "Failed to create RAID item.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>+ Add Item</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>New RAID Item</DialogTitle>
+        </DialogHeader>
+        <form className="space-y-3 py-2" onSubmit={handleSubmit}>
+          <div>
+            <Label>Type</Label>
+            <Select value={form.type} onValueChange={(v) => setForm((f) => ({ ...f, type: v as RaidType }))}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {RAID_TYPE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Title</Label>
+            <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required />
+          </div>
+          <div>
+            <Label>Description</Label>
+            <Textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Priority</Label>
+              <Select value={form.priority} onValueChange={(v) => setForm((f) => ({ ...f, priority: v as Priority }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PRIORITY_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>RAG Status</Label>
+              <Select value={form.rag_status} onValueChange={(v) => setForm((f) => ({ ...f, rag_status: v as RagStatus }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {RAG_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label>Due Date</Label>
+            <Input type="date" value={form.due_date} onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))} />
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <DialogFooter>
+            <Button variant="outline" type="button" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={loading}>{loading ? "Creating..." : "Create"}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -123,7 +123,7 @@ Integration testing (4.3h) → Bug fixing (4.3h) → Demo prep (2.5h)
 
 ## Key Risks to Timeline
 
-1. **Tech stack decision not yet confirmed** — adds 0.5–1 day if there's deliberation
+1. ~~**Tech stack decision not yet confirmed**~~ — ✅ RESOLVED: Next.js + Supabase + Vercel + Tailwind confirmed and scaffolded (2026-01-31)
 2. **Agent coordination overhead** — merge conflicts, integration gaps between parallel features
 3. **Supabase schema changes mid-build** — ripple effects across agents
 4. **Bry as bottleneck** — review/approval queues between phases
