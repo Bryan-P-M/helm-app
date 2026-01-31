@@ -62,15 +62,17 @@
 **Post text:**
 > Final question in my governance mini-series (thank you for all the engagement!).
 >
-> AI is everywhere right now. Every PPM vendor is adding "AI-powered" to their marketing. But I'm curious about what would genuinely help:
+> Every PPM vendor is adding "AI-powered" to their marketing. But I'm genuinely curious — is AI even what your PMO needs right now?
 >
-> **If AI could do ONE thing for your PMO governance, what would matter most?**
+> **Where would AI help your PMO most — if at all?**
 
 **Poll options:**
-1. Auto-extract actions from meeting transcripts
-2. Predict risks before they escalate
-3. Generate board reports from live data
-4. Flag stale/contradictory decisions automatically
+1. Speed up routine admin (reports, updates, chasing)
+2. Capture decisions & actions from meetings automatically
+3. Predict which projects are likely to slip
+4. Honestly, better AI isn't what we need right now
+
+> *Note: Options deliberately include non-governance AI use cases and a null hypothesis to avoid confirmation bias. If option 2 leads, it's a genuine signal for Helm's meeting-to-governance pipeline. If option 4 leads, it's a genuine warning that AI isn't the purchase driver.*
 
 **Hashtags:** #AI #PMO #Governance #FutureOfWork #ArtificialIntelligence
 
