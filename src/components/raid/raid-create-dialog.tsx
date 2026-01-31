@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
@@ -22,6 +22,21 @@ export default function RaidCreateDialog({
   workspaceId: string;
   projectId?: string;
 }) {
+  const [projects, setProjects] = useState<{ id: string; name: string; code: string }[]>([]);
+
+  useEffect(() => {
+    async function loadProjects() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("projects")
+        .select("id, name, code")
+        .eq("workspace_id", workspaceId)
+        .is("deleted_at", null)
+        .order("name");
+      setProjects(data ?? []);
+    }
+    loadProjects();
+  }, [workspaceId]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +47,7 @@ export default function RaidCreateDialog({
     priority: "medium" as Priority,
     rag_status: "amber" as RagStatus,
     due_date: "",
+    project_id: projectId ?? "",
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -45,7 +61,7 @@ export default function RaidCreateDialog({
         .from("raid_items")
         .insert([{
           workspace_id: workspaceId,
-          project_id: projectId ?? null,
+          project_id: form.project_id || null,
           type: form.type,
           title: form.title,
           description: form.description || null,
@@ -59,7 +75,7 @@ export default function RaidCreateDialog({
       if (insertError) throw insertError;
 
       setOpen(false);
-      setForm({ type: "risk", title: "", description: "", priority: "medium", rag_status: "amber", due_date: "" });
+      setForm({ type: "risk", title: "", description: "", priority: "medium", rag_status: "amber", due_date: "", project_id: "" });
       // Refresh page to show new item
       window.location.reload();
     } catch (err: any) {
@@ -85,6 +101,17 @@ export default function RaidCreateDialog({
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {RAID_TYPE_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Project</Label>
+            <Select value={form.project_id} onValueChange={(v) => setForm((f) => ({ ...f, project_id: v }))}>
+              <SelectTrigger><SelectValue placeholder="Select project..." /></SelectTrigger>
+              <SelectContent>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.code} — {p.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

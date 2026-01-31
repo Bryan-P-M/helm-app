@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
@@ -22,6 +22,21 @@ export default function ActionCreateDialog({
 }: {
   workspaceId: string;
 }) {
+  const [projects, setProjects] = useState<{ id: string; name: string; code: string }[]>([]);
+
+  useEffect(() => {
+    async function loadProjects() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("projects")
+        .select("id, name, code")
+        .eq("workspace_id", workspaceId)
+        .is("deleted_at", null)
+        .order("name");
+      setProjects(data ?? []);
+    }
+    loadProjects();
+  }, [workspaceId]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +45,7 @@ export default function ActionCreateDialog({
     description: "",
     priority: "medium" as Priority,
     due_date: "",
+    project_id: "",
   });
 
   async function handleSubmit(e: React.FormEvent) {
@@ -50,6 +66,7 @@ export default function ActionCreateDialog({
         .from("actions")
         .insert([{
           workspace_id: workspaceId,
+          project_id: form.project_id || null,
           title: form.title,
           description: form.description || null,
           priority: form.priority,
@@ -61,7 +78,7 @@ export default function ActionCreateDialog({
       if (insertError) throw insertError;
 
       setOpen(false);
-      setForm({ title: "", description: "", priority: "medium", due_date: "" });
+      setForm({ title: "", description: "", priority: "medium", due_date: "", project_id: "" });
       window.location.reload();
     } catch (err: any) {
       setError(err.message || "Failed to create action.");
@@ -119,6 +136,17 @@ export default function ActionCreateDialog({
                 onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
               />
             </div>
+          </div>
+          <div>
+            <Label>Project</Label>
+            <Select value={form.project_id} onValueChange={(v) => setForm((f) => ({ ...f, project_id: v }))}>
+              <SelectTrigger><SelectValue placeholder="Select project..." /></SelectTrigger>
+              <SelectContent>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.code} — {p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>

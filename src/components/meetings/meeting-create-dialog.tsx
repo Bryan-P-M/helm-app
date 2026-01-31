@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
@@ -19,6 +19,21 @@ export default function MeetingCreateDialog({
 }: {
   workspaceId: string;
 }) {
+  const [projects, setProjects] = useState<{ id: string; name: string; code: string }[]>([]);
+
+  useEffect(() => {
+    async function loadProjects() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("projects")
+        .select("id, name, code")
+        .eq("workspace_id", workspaceId)
+        .is("deleted_at", null)
+        .order("name");
+      setProjects(data ?? []);
+    }
+    loadProjects();
+  }, [workspaceId]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,6 +125,17 @@ export default function MeetingCreateDialog({
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={3}
             />
+          </div>
+          <div>
+            <Label>Project</Label>
+            <Select value={form.project_id} onValueChange={(v) => setForm((f) => ({ ...f, project_id: v }))}>
+              <SelectTrigger><SelectValue placeholder="Select project..." /></SelectTrigger>
+              <SelectContent>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.code} — {p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>
