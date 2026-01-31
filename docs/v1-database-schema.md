@@ -5,6 +5,8 @@
 >
 > **Tech Stack:** PostgreSQL via Supabase · Supabase Auth · Next.js · Prisma (likely)
 > **Last Updated:** 2026-01-31
+> **Status:** ✅ APPROVED
+> **Design Reference:** [Design Intelligence Spec](./design-intelligence-spec.md)
 
 ---
 

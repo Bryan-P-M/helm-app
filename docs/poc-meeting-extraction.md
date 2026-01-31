@@ -1,3 +1,6 @@
+> ⚠️ **DRAFT — v2 SCOPE** | This document is a planning skeleton for v2 AI features. It is not part of the v1 MVP.
+> Most sections are TBD. See `mvp-cutline.md` for the v1/v2 boundary.
+
 # POC: AI Meeting Action Extraction
 
 ## Purpose

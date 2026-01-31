@@ -47,7 +47,7 @@ Document the deployment process, infrastructure setup, and operational procedure
 - TBD: Rollback procedures
 - TBD: Data seeding (if needed)
 
-→ See: [data-model.md](./data-model.md)
+→ See: [data-model.md]((./v1-database-schema.md))
 
 ---
 
@@ -124,6 +124,6 @@ Document the deployment process, infrastructure setup, and operational procedure
 
 ## Related Documents
 
-- [Data Model](./data-model.md) - Database schema
-- [API Spec](./api-spec.md) - Service endpoints
+- [Data Model]((./v1-database-schema.md)) - Database schema
+- [API Spec]((./v1-api-contracts.md)) - Service endpoints
 - [Demo Scenario](./demo-scenario.md) - Demo deployment needs

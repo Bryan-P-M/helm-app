@@ -4,6 +4,8 @@
 > 
 > **Source documents:** Design Intelligence Spec (DIS), MVP Cut-Line, Personas, Product Map
 > **Last updated:** 2026-01-30
+> **Status:** ✅ APPROVED
+> **Design Reference:** [Design Intelligence Spec](./design-intelligence-spec.md)
 
 ---
 

@@ -1,3 +1,9 @@
+⚠️ **SUPERSEDED** — This early draft has been replaced by `../v1-api-contracts.md` (2568 lines, approved spec).
+This file is kept for historical reference only. Do not implement against this document.
+
+---
+
+
 # API Specification
 
 ## Purpose

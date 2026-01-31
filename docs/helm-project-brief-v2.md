@@ -205,16 +205,16 @@ helm/
 │   └── styles.css
 ├── images/
 └── docs/
-    ├── project-brief.md
+    ├── helm-project-brief-v2.md  ← this document
     ├── objectives.md
     ├── personas.md
     ├── assumptions.md
     ├── mvp-scope.md
+    ├── mvp-cutline.md
     ├── success-criteria.md
     ├── nfrs.md
-    ├── roadmap.md
     ├── glossary.md
-    └── planning-log.md
+    └── design-intelligence-spec.md
 ```
 
 ---
@@ -484,9 +484,9 @@ This stage requires careful thought—don't rush it. Work through each sub-task 
 > - Learning curve (what should I tackle while still a beginner vs. later?)
 > - AI-assisted development speeds (days not weeks for coding tasks)
 >
-> Challenge my sequencing. What would you build first? Output to docs/roadmap.md."
+> Challenge my sequencing. What would you build first? Output to docs/mvp-cutline.md."
 
-**Output:** `docs/roadmap.md`
+**Output:** `docs/mvp-cutline.md` *(roadmap captured in mvp-cutline.md and mvp-scope.md)*
 
 **Acceptance criteria:**
 - [ ] Phases 2–4 sketched with indicative scope
@@ -536,7 +536,7 @@ This stage requires careful thought—don't rush it. Work through each sub-task 
 **Time:** 30 minutes | **Constraint:** Human review
 
 - [ ] Review all docs for consistency
-- [ ] Update `docs/planning-log.md` with key decisions and rationale
+- [ ] Log key decisions in daily memory files (memory/YYYY-MM-DD.md)
 - [ ] Commit all Stage 2 outputs
 - [ ] Self-assess against quality checklist below
 
@@ -678,9 +678,9 @@ This stage requires careful thought—don't rush it. Work through each sub-task 
     [ ] mvp-scope.md
     [ ] success-criteria.md
     [ ] nfrs.md
-    [ ] roadmap.md
+    [ ] mvp-cutline.md
     [ ] glossary.md
-    [ ] planning-log.md
+    [ ] design-intelligence-spec.md
 [ ] Landing page copy drafted
 [ ] index.html created with semantic structure
 [ ] styles.css applied, page looks professional

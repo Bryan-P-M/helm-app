@@ -10,9 +10,9 @@
 | Role | Agent | Model | Tier | Rationale |
 |------|-------|-------|------|-----------|
 | **Orchestrator** | Silas (main session) | claude-opus-4-5 | Tier-3 | Per spec: `orchestration: any → claude-opus-4-5`. I coordinate, review, merge, resolve conflicts. |
-| **Schema Architect** | Silas (direct) | claude-opus-4-5 | Tier-3 | Per spec: `helm_development: High → claude-opus-4-5`. DB schema, shared types, API contracts — architecture decisions only. Done ONCE in Phase 0, then referenced by all agents. |
+| **Schema Architect** | Silas (orchestrator) | deepseek-reasoner | Tier-2 | Per Opus Tax rule: architecture decisions route through pipeline at max Tier-2. DB schema, shared types, API contracts — done ONCE in Phase 0, then referenced by all agents. |
 
-**Cost note:** Opus is ONLY used here. Every other agent runs Tier-0 to Tier-2.
+**Cost note:** All specialist work runs Tier-0 to Tier-2. Opus is reserved for orchestration (main session) only — never for specialist tasks.
 
 ---
 
@@ -163,8 +163,8 @@ Created by Opus (Silas) in Phase 0, consumed by all builders:
 2. **`types/index.ts`** — shared TypeScript types
 3. **`lib/supabase.ts`** — client configuration
 4. **`components/ui/`** — shared UI component library (shadcn/ui)
-5. **`docs/design-principles.md`** — the 5 principles for design-qa to check against
-6. **`docs/api-contracts.md`** — endpoint specifications for integration
+5. **`docs/design-intelligence-spec.md`** — the 5 principles for design-qa to check against
+6. **`docs/v1-api-contracts.md`** — endpoint specifications for integration
 
 **This eliminates the #1 parallelisation risk:** agents building incompatible interfaces.
 

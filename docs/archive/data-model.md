@@ -1,3 +1,9 @@
+⚠️ **SUPERSEDED** — This early draft has been replaced by `../v1-database-schema.md` (1970 lines, approved spec).
+This file is kept for historical reference only. Do not implement against this document.
+
+---
+
+
 # Data Model Specification
 
 ## Purpose

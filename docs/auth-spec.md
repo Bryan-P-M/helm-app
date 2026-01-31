@@ -174,6 +174,6 @@ Workspace
 
 ## Related Documents
 
-- [Data Model](./data-model.md) - User and role entities
-- [API Spec](./api-spec.md) - Auth endpoints
+- [Database Schema](./v1-database-schema.md) - User and role entities
+- [API Contracts](./v1-api-contracts.md) - Auth endpoints
 - [Deployment](./deployment.md) - Security configuration
