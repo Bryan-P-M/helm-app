@@ -20,6 +20,7 @@ import {
 } from "@/lib/constants";
 import type { RaidItemWithOwner, RaidType, RaidStatus, RagStatus } from "@/lib/types";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import ExportCSVButton from "@/components/shared/export-csv-button";
 
 function raidIdPrefix(type: string) {
   return RAID_TYPE_SHORT[type as RaidType] ?? type.charAt(0).toUpperCase();
@@ -98,6 +99,33 @@ export default function RaidTable({
         <Button variant="outline" size="sm" onClick={() => setFilterOpen((o) => !o)}>
           Filters
         </Button>
+        <ExportCSVButton
+          data={filteredItems.map((item: any) => ({
+            type: item.type,
+            title: item.title,
+            rag_status: item.rag_status,
+            status: item.status,
+            priority: item.priority,
+            owner: item.owner?.full_name ?? "Unassigned",
+            due_date: item.due_date ?? "",
+            source_level: item.source_level,
+            description: item.description ?? "",
+            created_at: item.created_at,
+          }))}
+          columns={[
+            { key: "type", header: "Type" },
+            { key: "title", header: "Title" },
+            { key: "rag_status", header: "RAG Status" },
+            { key: "status", header: "Status" },
+            { key: "priority", header: "Priority" },
+            { key: "owner", header: "Owner" },
+            { key: "due_date", header: "Due Date" },
+            { key: "source_level", header: "Source Level" },
+            { key: "description", header: "Description" },
+            { key: "created_at", header: "Created" },
+          ]}
+          filename="helm-raid-export"
+        />
       </div>
 
       {filterOpen && (

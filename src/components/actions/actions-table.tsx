@@ -21,6 +21,7 @@ import {
   ACTION_SOURCE_TYPE_LABELS,
 } from "@/lib/constants";
 import type { ActionWithRelations, ActionStatus } from "@/lib/types";
+import ExportCSVButton from "@/components/shared/export-csv-button";
 
 function isOverdue(a: ActionWithRelations) {
   return (
@@ -167,6 +168,29 @@ export default function ActionsTable({ initialActions }: ActionsTableProps) {
             onChange={(e) => setSearchFilter(e.target.value)}
           />
         </div>
+        <ExportCSVButton
+          data={filtered.map((action: any) => ({
+            title: action.title,
+            status: action.status,
+            priority: action.priority,
+            owner: action.owner?.full_name ?? "Unassigned",
+            due_date: action.due_date ?? "",
+            completed_at: action.completed_at ?? "",
+            source: action.source_raid_item_id ? "RAID" : "Direct",
+            created_at: action.created_at,
+          }))}
+          columns={[
+            { key: "title", header: "Title" },
+            { key: "status", header: "Status" },
+            { key: "priority", header: "Priority" },
+            { key: "owner", header: "Owner" },
+            { key: "due_date", header: "Due Date" },
+            { key: "completed_at", header: "Completed" },
+            { key: "source", header: "Source" },
+            { key: "created_at", header: "Created" },
+          ]}
+          filename="helm-actions-export"
+        />
         {(statusFilter || searchFilter) && (
           <Button
             variant="outline"

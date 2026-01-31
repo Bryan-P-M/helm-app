@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Clock, User, Shield, Activity, Search, Filter } from "lucide-react"; // Ensure these are safe icons
+import ExportCSVButton from "@/components/shared/export-csv-button";
 
 interface AuditEntry {
   id: string;
@@ -138,6 +139,25 @@ export function AuditTable({ entries }: { entries: AuditEntry[] }) {
             ))}
           </SelectContent>
         </Select>
+        <ExportCSVButton
+          data={filteredEntries.map((entry: any) => ({
+            performed_at: entry.performed_at,
+            performed_by: Array.isArray(entry.performed_by) ? entry.performed_by[0]?.full_name : entry.performed_by?.full_name ?? "System",
+            action: entry.action,
+            entity_type: entry.entity_type,
+            entity_id: entry.entity_id,
+            changes: entry.changes ? Object.keys(entry.changes).join(", ") : "",
+          }))}
+          columns={[
+            { key: "performed_at", header: "When" },
+            { key: "performed_by", header: "Who" },
+            { key: "action", header: "Action" },
+            { key: "entity_type", header: "Entity Type" },
+            { key: "entity_id", header: "Entity ID" },
+            { key: "changes", header: "Changes" },
+          ]}
+          filename="helm-audit-export"
+        />
       </div>
 
       <div className="rounded-md border">
