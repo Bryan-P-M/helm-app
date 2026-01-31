@@ -16,6 +16,7 @@ import {
   Menu,
   Layers,
   Briefcase,
+  Activity,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ const navItems = [
   { name: "Decisions", href: "/decisions", icon: Handshake },
   { name: "RACI", href: "/raci", icon: Users },
   { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Audit Trail", href: "/audit", icon: Activity },
 ];
 
 // --- GOOD PART: getInitials Helper ---
