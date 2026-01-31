@@ -1,104 +1,105 @@
 import { createClient } from "@/lib/supabase/server";
-import type {
-  RaidItem,
-  Action,
-  Project,
-  WorkspaceDashboard,
-  RagStatus,
-  AuditLogEntry,
-  Workspace,
-} from "@/lib/types";
 
-// Helper to count RAG status
-function ragSummary(items: { rag_status: RagStatus }[]) {
-  return {
-    red: items.filter((i) => i.rag_status === "red").length,
-    amber: items.filter((i) => i.rag_status === "amber").length,
-    green: items.filter((i) => i.rag_status === "green").length,
-  };
-}
-
-// NOTE: Only exports *server* functions for Dashboard server component
 export async function getWorkspaceDashboardData(userId: string) {
   const supabase = await createClient();
 
-  // 1. Get workspaces where user is a member (or owned)
-  const { data: workspaces, error: wsError } = await supabase
+  // Get workspace
+  const { data: memberships } = await supabase
     .from("workspace_members")
-    .select("workspace_id,workspaces(*)")
+    .select("workspace_id, workspaces(*)")
     .eq("user_id", userId);
 
-  if (wsError || !workspaces?.length) {
-    return { workspaces: [], dashboard: null };
-  }
-  // Pick first workspace for now (could extend to multi-workspace later)
-  const joined = workspaces[0].workspaces;
-  const workspace = (Array.isArray(joined) ? joined[0] : joined) as unknown as Workspace;
+  if (!memberships?.length) return null;
+  const workspace = Array.isArray(memberships[0].workspaces)
+    ? memberships[0].workspaces[0]
+    : memberships[0].workspaces;
+  if (!workspace) return null;
+  const workspaceId = (workspace as any).id;
 
-  const workspaceId = workspace.id;
-
-  // 2. RAID items (fetch all for stats & filter for exception list)
-  const { data: rawRaid } = await supabase
-    .from("raid_items")
-    .select("*")
-    .eq("workspace_id", workspaceId);
-  const raidItems = rawRaid ?? [];
-
-  // 3. Actions (open/of any status, overdue)
-  const now = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const { data: rawOpen } = await supabase
-    .from("actions")
-    .select("*")
+  // Portfolios with RAG
+  const { data: portfolios } = await supabase
+    .from("portfolios")
+    .select("id, name, code, rag_status, status, director_id")
     .eq("workspace_id", workspaceId)
-    .is("completed_at", null);
-  const openActions = rawOpen ?? [];
+    .is("deleted_at", null);
 
-  const { data: rawOverdue } = await supabase
-    .from("actions")
-    .select("*")
+  // Programmes with RAG
+  const { data: programmes } = await supabase
+    .from("programmes")
+    .select("id, name, code, rag_status, status, portfolio_id")
     .eq("workspace_id", workspaceId)
-    .lte("due_date", now)
-    .is("completed_at", null);
-  const overdueActions = rawOverdue ?? [];
+    .is("deleted_at", null);
 
-  // 4. Projects (active only)
-  const { data: rawProjects } = await supabase
+  // Projects
+  const { data: projects } = await supabase
     .from("projects")
-    .select("*")
+    .select("id, name, code, rag_status, status, programme_id")
     .eq("workspace_id", workspaceId)
-    .in("status", ["active", "in_progress"]);
-  const projects = rawProjects ?? [];
+    .is("deleted_at", null);
 
-  // 5. Exception-first (RAID items RED/AMBER, overdue actions)
-  const exceptionRaid = raidItems.filter(
-    (i) => i.rag_status === "red" || i.rag_status === "amber"
-  );
+  // RAID items (all, for RAG counts)
+  const { data: raidItems } = await supabase
+    .from("raid_items")
+    .select("id, rag_status, source_level, project_id, programme_id, portfolio_id")
+    .eq("workspace_id", workspaceId)
+    .is("deleted_at", null);
 
-  // 6. Audit log (recent 5 entries)
-  const { data: rawAudit } = await supabase
+  // Actions (open + overdue)
+  const now = new Date().toISOString().slice(0, 10);
+  const { data: openActions } = await supabase
+    .from("actions")
+    .select("id, title, status, due_date, priority, completed_at, project_id")
+    .eq("workspace_id", workspaceId)
+    .is("completed_at", null)
+    .is("deleted_at", null);
+
+  const overdueActions = (openActions ?? []).filter(a => a.due_date && a.due_date <= now);
+
+  // Needs attention: RED/AMBER RAID + overdue actions
+  const exceptionRaid = (raidItems ?? []).filter(r => r.rag_status === "red" || r.rag_status === "amber");
+  const needsAttention = [
+    ...exceptionRaid.map(i => ({ ...i, kind: "RAID" as const })),
+    ...overdueActions.map(a => ({ ...a, kind: "Action" as const })),
+  ];
+
+  // Audit log
+  const { data: auditLog } = await supabase
     .from("audit_log")
     .select("*")
     .eq("workspace_id", workspaceId)
     .order("performed_at", { ascending: false })
     .limit(5);
-  const auditLog = rawAudit ?? [];
 
-  // 7. Tuple: summary + raw for needs attention
-  const rag = ragSummary(raidItems);
+  // RAG summary across all entities
+  const ragCount = (items: { rag_status: string }[]) => ({
+    red: items.filter(i => i.rag_status === "red").length,
+    amber: items.filter(i => i.rag_status === "amber").length,
+    green: items.filter(i => i.rag_status === "green").length,
+  });
 
   return {
     workspace,
-    workspaceId,
-    raidItems,
-    openActions,
+    portfolios: portfolios ?? [],
+    programmes: programmes ?? [],
+    projects: projects ?? [],
+    raidItems: raidItems ?? [],
+    openActions: openActions ?? [],
     overdueActions,
-    projects,
-    rag,
-    exceptionRaid,
-    needsAttention: [
-      ...exceptionRaid.map((i) => ({ ...i, kind: "RAID" as const })),
-      ...overdueActions.map((a) => ({ ...a, kind: "Action" as const })),
-    ],
-    auditLog,
+    needsAttention,
+    auditLog: auditLog ?? [],
+    rag: {
+      portfolio: ragCount(portfolios ?? []),
+      programme: ragCount(programmes ?? []),
+      project: ragCount(projects ?? []),
+      raid: ragCount(raidItems ?? []),
+    },
+    counts: {
+      portfolios: (portfolios ?? []).length,
+      programmes: (programmes ?? []).length,
+      projects: (projects ?? []).length,
+      raidTotal: (raidItems ?? []).length,
+      openActions: (openActions ?? []).length,
+      overdueActions: overdueActions.length,
+    },
   };
 }
