@@ -17,6 +17,8 @@ import {
 } from "@/lib/constants";
 import type { Priority, ActionStatus } from "@/lib/types";
 
+import { useRouter } from "next/navigation";
+
 export default function ActionCreateDialog({
   workspaceId,
 }: {
@@ -47,6 +49,8 @@ export default function ActionCreateDialog({
     due_date: "",
     project_id: "",
   });
+
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -79,7 +83,7 @@ export default function ActionCreateDialog({
 
       setOpen(false);
       setForm({ title: "", description: "", priority: "medium", due_date: "", project_id: "" });
-      window.location.reload();
+      router.refresh();
     } catch (err: any) {
       setError(err.message || "Failed to create action.");
     } finally {

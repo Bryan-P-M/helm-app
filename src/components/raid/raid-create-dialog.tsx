@@ -15,6 +15,8 @@ import { RAID_TYPE_OPTIONS, RAG_OPTIONS, PRIORITY_OPTIONS } from "@/lib/constant
 import { createClient } from "@/lib/supabase/client";
 import type { RaidType, RagStatus, Priority } from "@/lib/types";
 
+import { useRouter } from "next/navigation";
+
 export default function RaidCreateDialog({
   workspaceId,
   projectId,
@@ -50,6 +52,8 @@ export default function RaidCreateDialog({
     project_id: projectId ?? "",
   });
 
+  const router = useRouter();
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -77,7 +81,7 @@ export default function RaidCreateDialog({
       setOpen(false);
       setForm({ type: "risk", title: "", description: "", priority: "medium", rag_status: "amber", due_date: "", project_id: "" });
       // Refresh page to show new item
-      window.location.reload();
+      router.refresh();
     } catch (err: any) {
       setError(err.message || "Failed to create RAID item.");
     } finally {

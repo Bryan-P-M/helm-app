@@ -15,6 +15,8 @@ import { createClient } from "@/lib/supabase/client";
 import { DECISION_STATUS_LABELS } from "@/lib/constants";
 import type { DecisionStatus } from "@/lib/types";
 
+import { useRouter } from "next/navigation";
+
 export default function DecisionCreateDialog({
   workspaceId,
 }: {
@@ -46,6 +48,8 @@ export default function DecisionCreateDialog({
     decision_date: "",
     project_id: "",
   });
+
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,7 +84,7 @@ export default function DecisionCreateDialog({
         title: "", description: "", rationale: "",
         status: "draft", decision_date: "", project_id: "",
       });
-      window.location.reload();
+      router.refresh();
     } catch (err: any) {
       setError(err.message || "Failed to create decision.");
     } finally {

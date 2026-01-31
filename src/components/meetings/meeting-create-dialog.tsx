@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import type { MeetingStatus } from "@/lib/types";
 
+import { useRouter } from "next/navigation";
+
 export default function MeetingCreateDialog({
   workspaceId,
 }: {
@@ -45,6 +47,8 @@ export default function MeetingCreateDialog({
     project_id: "",
   });
 
+  const router = useRouter();
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -75,7 +79,7 @@ export default function MeetingCreateDialog({
 
       setOpen(false);
       setForm({ title: "", meeting_date: "", location: "", notes: "", project_id: "" });
-      window.location.reload();
+      router.refresh();
     } catch (err: any) {
       setError(err.message || "Failed to create meeting.");
     } finally {

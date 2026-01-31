@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Workspace, WorkspaceMember, WorkspaceRole, Profile } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,7 @@ interface SettingsPanelProps {
 }
 
 export default function SettingsPanel({ workspace, members, isAdmin, currentUserId }: SettingsPanelProps) {
+  const router = useRouter();
   const [generalEdit, setGeneralEdit] = useState({
     name: workspace.name,
     description: workspace.description || "",
@@ -48,7 +50,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
         name: generalEdit.name,
         description: generalEdit.description,
       }).eq("id", workspace.id);
-      window.location.reload();
+      router.refresh();
     } catch (e: any) {
       setError(e.message);
     }
@@ -72,7 +74,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
       });
       setInviteEmail("");
       setInviteRole("member");
-      window.location.reload();
+      router.refresh();
     } catch (e: any) {
       setError(e.message);
     }
@@ -89,7 +91,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
         body: JSON.stringify({ memberId, role }),
         headers: { "Content-Type": "application/json" },
       });
-      window.location.reload();
+      router.refresh();
     } catch (e: any) {
       setError(e.message);
     }
@@ -107,7 +109,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
         body: JSON.stringify({ memberId }),
         headers: { "Content-Type": "application/json" },
       });
-      window.location.reload();
+      router.refresh();
     } catch (e: any) {
       setError(e.message);
     }
@@ -125,7 +127,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
         full_name: profileEdit.displayName,
         avatar_url: profileEdit.avatarUrl,
       }).eq("id", currentUserId);
-      window.location.reload();
+      router.refresh();
     } catch (e: any) {
       setError(e.message);
     }
