@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getMeetingDetail } from "@/lib/queries/meetings";
 import { MeetingNotesEditor } from "@/components/meetings/meeting-notes-editor";
+import AIExtractionReview from "@/components/meetings/ai-extraction-review";
 import { ExtractActionDialog } from "@/components/meetings/extract-action-dialog";
 import { ExtractDecisionDialog } from "@/components/meetings/extract-decision-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -136,6 +137,22 @@ export default async function MeetingDetailPage({
           <MeetingNotesEditor
             meetingId={meeting.id}
             initialNotes={meeting.notes}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>AI Extraction — Helmbot</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AIExtractionReview
+            meetingId={meeting.id}
+            meetingTitle={meeting.title}
+            meetingDate={meeting.meeting_date}
+            notes={meeting.notes}
+            projectId={meeting.project_id}
+            workspaceId={meeting.workspace_id}
           />
         </CardContent>
       </Card>
