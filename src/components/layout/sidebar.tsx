@@ -14,6 +14,7 @@ import {
   Users,
   Settings,
   Menu,
+  Layers,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ import type { Profile } from "@/lib/types/database";
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: Home },
+  { name: "Programmes", href: "/programmes", icon: Layers },
   { name: "Projects", href: "/projects", icon: FolderKanban },
   { name: "RAID Log", href: "/raid", icon: FileText },
   { name: "Actions", href: "/actions", icon: CheckCircle },
