@@ -114,7 +114,7 @@ interface UserProfileProps {
 function UserProfile({ profile, loading }: UserProfileProps) {
   const initials = getInitials(profile);
   return (
-    <div className="flex items-center gap-3 p-4 border-t">
+    <div className="flex items-center gap-3 p-4 border-t border-slate-700">
       <Avatar className="h-9 w-9">
         <AvatarImage
           src={profile?.avatar_url || undefined}
@@ -123,10 +123,10 @@ function UserProfile({ profile, loading }: UserProfileProps) {
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar>
       <div className="flex flex-col truncate">
-        <span className="text-sm font-medium text-foreground truncate">
+        <span className="text-sm font-medium text-slate-200 truncate">
           {profile?.full_name || profile?.email || "Guest"}
         </span>
-        <span className="text-xs text-muted-foreground truncate">
+        <span className="text-xs text-slate-400 truncate">
           {profile?.email || "No email"}
         </span>
       </div>
@@ -145,14 +145,14 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <div
       className={cn(
-        "hidden md:flex flex-col h-full border-r bg-muted/40",
+        "hidden md:flex flex-col h-full border-r border-slate-800 bg-[#1B263B] text-slate-200",
         className
       )}
     >
-      <div className="flex h-16 items-center border-b px-4">
+      <div className="flex h-16 items-center border-b border-slate-700 px-4">
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <Image src="/helm-logo.svg" alt="Helm Logo" width={24} height={24} />
-          <span className="text-lg">Helm</span>
+          <span className="text-lg text-white font-semibold">Helm</span>
         </Link>
       </div>
       <nav className="flex-1 overflow-auto py-4">
@@ -166,8 +166,8 @@ export function Sidebar({ className }: SidebarProps) {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                    isActive && "bg-muted text-primary"
+                    "flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium text-slate-300 transition-colors hover:bg-[#2C3E50] hover:text-white mx-0",
+                    isActive && "bg-[#E0C389]/15 text-[#E0C389] border-l-2 border-[#E0C389]"
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -195,8 +195,8 @@ export function MobileSidebar() {
           <span className="sr-only">Toggle navigation menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="flex flex-col p-0">
-        <div className="flex h-16 items-center border-b px-4">
+      <SheetContent side="left" className="flex flex-col p-0 bg-[#1B263B] text-slate-200">
+        <div className="flex h-16 items-center border-b border-slate-700 px-4">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <Image src="/helm-logo.svg" alt="Helm Logo" width={24} height={24} />
             <span className="text-lg">Helm</span>
@@ -213,8 +213,8 @@ export function MobileSidebar() {
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                      isActive && "bg-muted text-primary"
+                      "flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium text-slate-300 transition-colors hover:bg-[#2C3E50] hover:text-white mx-0",
+                      isActive && "bg-[#E0C389]/15 text-[#E0C389] border-l-2 border-[#E0C389]"
                     )}
                   >
                     <item.icon className="h-4 w-4" />
