@@ -142,7 +142,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
         <TabsTrigger value="profile">Profile</TabsTrigger>
       </TabsList>
       <TabsContent value="general">
-        <Card className="bg-gray-950 border-emerald-700">
+        <Card className="bg-card text-card-foreground border-emerald-700">
           <CardHeader>
             <CardTitle>General</CardTitle>
             <CardDescription>Workspace settings and info.</CardDescription>
@@ -150,16 +150,16 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
           <CardContent>
             <form onSubmit={handleGeneralSave} className="space-y-4">
               <div>
-                <Label>Name</Label>
-                <Input value={generalEdit.name} onChange={e => setGeneralEdit({ ...generalEdit, name: e.target.value })} required />
+                <Label className="text-foreground">Name</Label>
+                <Input value={generalEdit.name} onChange={e => setGeneralEdit({ ...generalEdit, name: e.target.value })} required className="bg-background text-foreground" />
               </div>
               <div>
-                <Label>Description</Label>
-                <Input value={generalEdit.description} onChange={e => setGeneralEdit({ ...generalEdit, description: e.target.value })} />
+                <Label className="text-foreground">Description</Label>
+                <Input value={generalEdit.description} onChange={e => setGeneralEdit({ ...generalEdit, description: e.target.value })} className="bg-background text-foreground" />
               </div>
               <div>
-                <Label>Slug</Label>
-                <Input value={workspace.slug} readOnly className="bg-gray-800 text-gray-400" />
+                <Label className="text-foreground">Slug</Label>
+                <Input value={workspace.slug} readOnly className="bg-background text-foreground" />
               </div>
               <Button type="submit" disabled={saving} className="bg-emerald-700">{saving ? "Saving..." : "Save"}</Button>
               {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
@@ -168,7 +168,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
         </Card>
       </TabsContent>
       <TabsContent value="members">
-        <Card className="bg-gray-950 border-emerald-700">
+        <Card className="bg-card text-card-foreground border-emerald-700">
           <CardHeader>
             <CardTitle>Members</CardTitle>
             <CardDescription>
@@ -179,13 +179,13 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
             {isAdmin && (
               <form onSubmit={handleInvite} className="flex gap-2 items-end mb-6">
                 <div className="flex-1">
-                  <Label>Email</Label>
-                  <Input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} type="email" required disabled={saving} />
+                  <Label className="text-foreground">Email</Label>
+                  <Input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} type="email" required disabled={saving} className="bg-background text-foreground" />
                 </div>
                 <div>
-                  <Label>Role</Label>
+                  <Label className="text-foreground">Role</Label>
                   <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as WorkspaceRole)}>
-                    <SelectTrigger className="w-28">
+                    <SelectTrigger className="w-28 bg-background text-foreground">
                       <SelectValue placeholder="Role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -200,12 +200,12 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
             <Separator className="my-4" />
             <div className="space-y-2">
               {members.map((m) => (
-                <div key={m.id} className="flex items-center justify-between px-2 py-2 bg-gray-900 rounded">
+                <div key={m.id} className="flex items-center justify-between px-2 py-2 bg-card rounded">
                   <div className="flex items-center gap-3">
                     {m.profile.avatar_url && <img src={m.profile.avatar_url ?? ""} alt={m.profile.full_name ?? ""} className="w-9 h-9 rounded-full" />}
                     <div>
                       <div className="font-medium">{m.profile.full_name ?? ""}</div>
-                      <div className="text-xs text-gray-400">{m.profile.email ?? ""}</div>
+                      <div className="text-xs text-muted-foreground">{m.profile.email ?? ""}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -248,7 +248,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
         </Card>
       </TabsContent>
       <TabsContent value="profile">
-        <Card className="bg-gray-950 border-emerald-700">
+        <Card className="bg-card text-card-foreground border-emerald-700">
           <CardHeader>
             <CardTitle>Profile</CardTitle>
             <CardDescription>Personalise your display name and avatar.</CardDescription>
@@ -256,12 +256,12 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
           <CardContent>
             <form onSubmit={handleProfileSave} className="space-y-4">
               <div>
-                <Label>Display Name</Label>
-                <Input value={profileEdit.displayName} onChange={e => setProfileEdit({ ...profileEdit, displayName: e.target.value })} required />
+                <Label className="text-foreground">Display Name</Label>
+                <Input value={profileEdit.displayName} onChange={e => setProfileEdit({ ...profileEdit, displayName: e.target.value })} required className="bg-background text-foreground" />
               </div>
               <div>
-                <Label>Avatar URL</Label>
-                <Input value={profileEdit.avatarUrl} onChange={e => setProfileEdit({ ...profileEdit, avatarUrl: e.target.value })} />
+                <Label className="text-foreground">Avatar URL</Label>
+                <Input value={profileEdit.avatarUrl} onChange={e => setProfileEdit({ ...profileEdit, avatarUrl: e.target.value })} className="bg-background text-foreground" />
               </div>
               <Button type="submit" disabled={profileSaving} className="bg-emerald-700">{profileSaving ? "Saving..." : "Save"}</Button>
               {error && <div className="text-red-500 text-sm mt-2">{error}</div>}

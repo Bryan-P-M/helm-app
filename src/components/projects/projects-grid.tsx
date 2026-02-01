@@ -23,9 +23,9 @@ export default function ProjectsGrid({ initialProjects, workspaceId }: {
   initialProjects: ProjectWithOwner[];
   workspaceId: string;
 }) {
-  const [status, setStatus] = useState("");
-  const [rag, setRag] = useState("");
-  const [ownerId, setOwnerId] = useState("");
+  const [status, setStatus] = useState("all");
+  const [rag, setRag] = useState("all");
+  const [ownerId, setOwnerId] = useState("all");
   const [selectedProject, setSelectedProject] = useState<ProjectWithOwner|null>(null);
   const [search, setSearch] = useState("");
 
@@ -34,9 +34,9 @@ export default function ProjectsGrid({ initialProjects, workspaceId }: {
     const ragRank = { red: 1, amber: 2, green: 3 };
     return initialProjects
       .filter(p =>
-        (!status || p.status === status) &&
-        (!rag || p.rag_status === rag) &&
-        (!ownerId || p.owner?.id === ownerId) &&
+        (status === "all" || p.status === status) &&
+        (rag === "all" || p.rag_status === rag) &&
+        (ownerId === "all" || p.owner?.id === ownerId) &&
         (!search || p.name.toLowerCase().includes(search.toLowerCase()))
       )
       .sort((a, b) => {
@@ -69,7 +69,7 @@ export default function ProjectsGrid({ initialProjects, workspaceId }: {
               <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               {STATUS_OPTIONS.map(s => (
                 <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>
               ))}
@@ -83,7 +83,7 @@ export default function ProjectsGrid({ initialProjects, workspaceId }: {
               <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               {RAG_OPTIONS.map(r => (
                 <SelectItem key={r} value={r}>{r}</SelectItem>
               ))}
@@ -97,7 +97,7 @@ export default function ProjectsGrid({ initialProjects, workspaceId }: {
               <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               {owners.map(o => (
                 <SelectItem key={o.id} value={o.id}>{o.full_name}</SelectItem>
               ))}
@@ -116,8 +116,8 @@ export default function ProjectsGrid({ initialProjects, workspaceId }: {
           <div className="col-span-full p-8 text-center text-muted-foreground">No projects found.</div>
         )}
         {sortedProjects.map(project => (
-          <Link href={"/projects/" + project.id}>
-          <Card key={project.id} className="hover:shadow-lg transition cursor-pointer">
+          <Link key={project.id} href={"/projects/" + project.id}>
+          <Card className="hover:shadow-lg transition cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>{project.name}</CardTitle>
