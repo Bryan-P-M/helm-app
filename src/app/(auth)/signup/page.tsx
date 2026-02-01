@@ -47,8 +47,8 @@ export default function SignupPage() {
       setMessage(
         "Account created successfully! Check your email for a verification link."
       );
-      // Optionally redirect to a confirmation page or login page after a delay
-      // router.push("/login");
+      router.push("/portfolios");
+
     }
     setLoading(false);
   };
