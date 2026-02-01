@@ -32,12 +32,6 @@ export default async function PortfoliosPage() {
         </PortfolioCreateDialog>
       </div>
 
-      {portfolios.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <h3 className="text-lg font-semibold mb-2">No portfolios yet</h3>
-          <p className="text-muted-foreground mb-4">Create your first portfolio to start organising your programmes and projects.</p>
-        </div>
-      ) : (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {portfolios.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center w-full col-span-full">
@@ -78,7 +72,6 @@ export default async function PortfoliosPage() {
           ))
         )}
       </div>
-      )}
     </div>
   );
 }
