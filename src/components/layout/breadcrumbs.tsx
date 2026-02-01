@@ -14,6 +14,9 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
 
+  // If we're on the dashboard page, don't show duplicate "Dashboard"
+  const isDashboardPage = pathname === "/dashboard";
+
   const prettifySegment = (segment: string) => {
     const replacements: Record<string, string> = {
       raid: "RAID Log",
@@ -29,34 +32,42 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
   return (
     <nav className={className} aria-label="breadcrumb">
       <ol className="flex items-center space-x-2 text-sm text-muted-foreground">
-        <li>
-          <Link href="/dashboard" className="hover:text-primary">
-            Dashboard
-          </Link>
-        </li>
-        {segments.map((segment, index) => {
-          const href = "/" + segments.slice(0, index + 1).join("/");
-          const isLast = index === segments.length - 1;
-          return (
-            <Fragment key={segment}>
-              <li className="flex items-center">
-                <Separator
-                  orientation="vertical"
-                  className="h-4 w-px bg-muted-foreground mx-2"
-                />
-                {isLast ? (
-                  <span className="text-primary font-medium">
-                    {prettifySegment(segment)}
-                  </span>
-                ) : (
-                  <Link href={href} className="hover:text-primary">
-                    {prettifySegment(segment)}
-                  </Link>
-                )}
-              </li>
-            </Fragment>
-          );
-        })}
+        {isDashboardPage ? (
+          <li>
+            <span className="text-primary font-medium">Dashboard</span>
+          </li>
+        ) : (
+          <>
+            <li>
+              <Link href="/dashboard" className="hover:text-primary">
+                Dashboard
+              </Link>
+            </li>
+            {segments.map((segment, index) => {
+              const href = "/" + segments.slice(0, index + 1).join("/");
+              const isLast = index === segments.length - 1;
+              return (
+                <Fragment key={segment}>
+                  <li className="flex items-center">
+                    <Separator
+                      orientation="vertical"
+                      className="h-4 w-px bg-muted-foreground mx-2"
+                    />
+                    {isLast ? (
+                      <span className="text-primary font-medium">
+                        {prettifySegment(segment)}
+                      </span>
+                    ) : (
+                      <Link href={href} className="hover:text-primary">
+                        {prettifySegment(segment)}
+                      </Link>
+                    )}
+                  </li>
+                </Fragment>
+              );
+            })}
+          </>
+        )}
       </ol>
     </nav>
   );

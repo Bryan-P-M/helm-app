@@ -25,6 +25,7 @@ export default function ActionCreateDialog({
   workspaceId: string;
 }) {
   const [projects, setProjects] = useState<{ id: string; name: string; code: string }[]>([]);
+  const [members, setMembers] = useState<{ id: string; full_name: string }[]>([]);
 
   useEffect(() => {
     async function loadProjects() {
@@ -39,6 +40,19 @@ export default function ActionCreateDialog({
     }
     loadProjects();
   }, [workspaceId]);
+
+  useEffect(() => {
+    async function loadMembers() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("workspace_members")
+        .select("user_id, profile:profiles(id, full_name)")
+        .eq("workspace_id", workspaceId);
+      setMembers((data ?? []).map((m: any) => ({ id: m.profile?.id, full_name: m.profile?.full_name ?? "Unknown" })));
+    }
+    loadMembers();
+  }, [workspaceId]);
+
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +62,7 @@ export default function ActionCreateDialog({
     priority: "medium" as Priority,
     due_date: "",
     project_id: "",
+    owner_id: "",
   });
 
   const router = useRouter();
@@ -71,6 +86,7 @@ export default function ActionCreateDialog({
         .insert([{
           workspace_id: workspaceId,
           project_id: form.project_id || null,
+          owner_id: form.owner_id && form.owner_id !== "unassigned" ? form.owner_id : null,
           title: form.title,
           description: form.description || null,
           priority: form.priority,
@@ -82,7 +98,7 @@ export default function ActionCreateDialog({
       if (insertError) throw insertError;
 
       setOpen(false);
-      setForm({ title: "", description: "", priority: "medium", due_date: "", project_id: "" });
+      setForm({ title: "", description: "", priority: "medium", due_date: "", project_id: "", owner_id: "" });
       router.refresh();
     } catch (err: any) {
       setError(err.message || "Failed to create action.");
@@ -148,6 +164,20 @@ export default function ActionCreateDialog({
               <SelectContent>
                 {projects.map((p) => (
                   <SelectItem key={p.id} value={p.id}>{p.code} — {p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="owner_id">Owner</Label>
+            <Select value={form.owner_id} onValueChange={(v) => setForm((f) => ({ ...f, owner_id: v }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Assign owner (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {members.map(m => (
+                  <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
