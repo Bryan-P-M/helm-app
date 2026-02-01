@@ -28,7 +28,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/types/database";
 
 const navItems = [
-  { name: "Dashboard", href: "/", icon: Home },
+  { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Portfolios", href: "/portfolios", icon: Briefcase },
   { name: "Programmes", href: "/programmes", icon: Layers },
   { name: "Projects", href: "/projects", icon: FolderKanban },
@@ -152,7 +152,7 @@ export function Sidebar({ className }: SidebarProps) {
       )}
     >
       <div className="flex h-16 items-center border-b border-slate-700 px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
           <Image src="/helm-logo.svg" alt="Helm Logo" width={24} height={24} />
           <span className="text-lg text-white font-semibold">Helm</span>
         </Link>
@@ -199,7 +199,7 @@ export function MobileSidebar() {
       </SheetTrigger>
       <SheetContent side="left" className="flex flex-col p-0 bg-[#1B263B] text-slate-200">
         <div className="flex h-16 items-center border-b border-slate-700 px-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
+          <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
             <Image src="/helm-logo.svg" alt="Helm Logo" width={24} height={24} />
             <span className="text-lg">Helm</span>
           </Link>
