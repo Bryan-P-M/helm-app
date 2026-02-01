@@ -62,7 +62,11 @@ export default async function IntegrationsPage() {
             Connect Helm to external systems. Webhooks notify your services when governance events occur.
           </p>
         </div>
-        <WebhookCreateDialog />
+        <WebhookCreateDialog>
+          <Button variant="default">
+            + Create Webhook
+          </Button>
+        </WebhookCreateDialog>
       </div>
 
       <Card>

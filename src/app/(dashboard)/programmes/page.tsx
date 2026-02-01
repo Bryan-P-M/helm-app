@@ -32,7 +32,10 @@ export default async function ProgrammesPage() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {programmes.length === 0 ? (
-          <p className="text-muted-foreground col-span-full">No programmes found. Create a new one to get started.</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center col-span-full">
+            <h3 className="text-lg font-semibold mb-2">No programmes yet</h3>
+            <p className="text-muted-foreground mb-4">Create your first programme to start tracking delivery across your projects.</p>
+          </div>
         ) : (
           programmes.map((programme) => (
             <Link href={`/programmes/${programme.id}`} key={programme.id}>

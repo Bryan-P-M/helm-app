@@ -17,6 +17,7 @@ export function Breadcrumbs({ className }: BreadcrumbsProps) {
   const prettifySegment = (segment: string) => {
     const replacements: Record<string, string> = {
       raid: "RAID Log",
+      raci: "RACI",
     };
     const replaced = replacements[segment] || segment;
     return replaced

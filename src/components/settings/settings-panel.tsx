@@ -142,7 +142,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
         <TabsTrigger value="profile">Profile</TabsTrigger>
       </TabsList>
       <TabsContent value="general">
-        <Card className="bg-card text-card-foreground border-emerald-700">
+        <Card className="bg-card text-card-foreground border-border">
           <CardHeader>
             <CardTitle>General</CardTitle>
             <CardDescription>Workspace settings and info.</CardDescription>
@@ -168,7 +168,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
         </Card>
       </TabsContent>
       <TabsContent value="members">
-        <Card className="bg-card text-card-foreground border-emerald-700">
+        <Card className="bg-card text-card-foreground border-border">
           <CardHeader>
             <CardTitle>Members</CardTitle>
             <CardDescription>
@@ -248,7 +248,7 @@ export default function SettingsPanel({ workspace, members, isAdmin, currentUser
         </Card>
       </TabsContent>
       <TabsContent value="profile">
-        <Card className="bg-card text-card-foreground border-emerald-700">
+        <Card className="bg-card text-card-foreground border-border">
           <CardHeader>
             <CardTitle>Profile</CardTitle>
             <CardDescription>Personalise your display name and avatar.</CardDescription>

@@ -32,39 +32,53 @@ export default async function PortfoliosPage() {
         </PortfolioCreateDialog>
       </div>
 
+      {portfolios.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <h3 className="text-lg font-semibold mb-2">No portfolios yet</h3>
+          <p className="text-muted-foreground mb-4">Create your first portfolio to start organising your programmes and projects.</p>
+        </div>
+      ) : (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {portfolios.map((portfolio) => (
-          <Card key={portfolio.id}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{portfolio.name}</CardTitle>
-                <Badge className={
-                  portfolio.rag_status === 'red' ? 'bg-red-500 hover:bg-red-600' :
-                  portfolio.rag_status === 'amber' ? 'bg-amber-500 hover:bg-amber-600' :
-                  'bg-green-500 hover:bg-green-600'
-                }>
-                  {portfolio.rag_status.toUpperCase()}
-                </Badge>
-              </div>
-              <CardDescription>{portfolio.code}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Status: {portfolio.status}</p>
-              <p className="text-sm text-muted-foreground">
-                Director: {portfolio.director?.full_name || 'N/A'}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Programmes: {portfolio.programme_count}
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button asChild variant="secondary" className="w-full">
-                <Link href={`/portfolios/${portfolio.id}`}>View Details</Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+        {portfolios.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center w-full col-span-full">
+            <h3 className="text-lg font-semibold mb-2">No portfolios yet</h3>
+            <p className="text-muted-foreground mb-4">Create your first portfolio to start organising your programmes and projects.</p>
+          </div>
+        ) : (
+          portfolios.map((portfolio) => (
+            <Card key={portfolio.id}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>{portfolio.name}</CardTitle>
+                  <Badge className={
+                    portfolio.rag_status === 'red' ? 'bg-red-500 hover:bg-red-600' :
+                    portfolio.rag_status === 'amber' ? 'bg-amber-500 hover:bg-amber-600' :
+                    'bg-green-500 hover:bg-green-600'
+                  }>
+                    {portfolio.rag_status.toUpperCase()}
+                  </Badge>
+                </div>
+                <CardDescription>{portfolio.code}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">Status: {portfolio.status}</p>
+                <p className="text-sm text-muted-foreground">
+                  Director: {portfolio.director?.full_name || 'N/A'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Programmes: {portfolio.programme_count}
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button asChild variant="secondary" className="w-full">
+                  <Link href={`/portfolios/${portfolio.id}`}>View Details</Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))
+        )}
       </div>
+      )}
     </div>
   );
 }

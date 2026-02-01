@@ -36,7 +36,7 @@ const navItems = [
   { name: "Actions", href: "/actions", icon: CheckCircle },
   { name: "Meetings", href: "/meetings", icon: Calendar },
   { name: "Decisions", href: "/decisions", icon: Handshake },
-  { name: "RACI", href: "/raci", icon: Users },
+  { name: "RACI", href: "/raci", icon: Users, display: "RACI" },
   { name: "Settings", href: "/settings", icon: Settings },
   { name: "Audit Trail", href: "/audit", icon: Activity },
   { name: "Integrations", href: "/integrations", icon: ExternalLink },
