@@ -10,6 +10,8 @@ import {
 } from "@/lib/constants";
 import { ArrowUpCircle } from "lucide-react";
 import RaidEscalateDialog from "@/components/raid/raid-escalate-dialog";
+import RiskScoreBadge from "./risk-score-badge";
+import { likelihoodLabel, impactLabel, mitigationLabel, scoreToRag } from "@/lib/risk-scoring";
 import type { RaidItemWithOwner } from "@/lib/types";
 import Link from "next/link";
 
@@ -83,6 +85,59 @@ export default function RaidDetailSheet({
                   <div className="text-sm">{new Date(item.created_at).toLocaleDateString()}</div>
                 </div>
               </div>
+              {/* Risk Scoring Panel — only shown for type='risk' items with scores */}
+              {item.type === "risk" && item.likelihood_score != null && (
+                <div className="space-y-2 border-t pt-3">
+                  <div className="text-xs text-muted-foreground uppercase">Risk Scoring</div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <div className="text-xs text-muted-foreground">Likelihood</div>
+                      <div className="text-sm">{item.likelihood_score} – {likelihoodLabel(item.likelihood_score)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Impact</div>
+                      <div className="text-sm">{item.impact_score} – {impactLabel(item.impact_score!)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">Mitigation</div>
+                      <div className="text-sm">{item.mitigation_score} – {mitigationLabel(item.mitigation_score!)}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Inherent: </span>
+                      <span className="font-semibold">{item.inherent_risk_score}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Residual: </span>
+                      <RiskScoreBadge score={item.residual_risk_score} />
+                    </div>
+                  </div>
+                  {(item.urgency_flag || item.trend || item.review_date) && (
+                    <div className="grid grid-cols-3 gap-3">
+                      {item.urgency_flag && (
+                        <div>
+                          <div className="text-xs text-muted-foreground">Urgency</div>
+                          <div className="text-sm">{item.urgency_flag}</div>
+                        </div>
+                      )}
+                      {item.trend && (
+                        <div>
+                          <div className="text-xs text-muted-foreground">Trend</div>
+                          <div className="text-sm">{item.trend}</div>
+                        </div>
+                      )}
+                      {item.review_date && (
+                        <div>
+                          <div className="text-xs text-muted-foreground">Review Date</div>
+                          <div className="text-sm">{item.review_date}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {item.escalation_note && (
                 <div>
                   <div className="text-xs text-muted-foreground">Escalation Note</div>

@@ -24,6 +24,12 @@ export type ParticipantRole = 'decider' | 'participant' | 'consulted' | 'informe
 export type RaidLinkType = 'dependency' | 'related' | 'duplicate' | 'blocks' | 'blocked_by';
 export type AuditAction = 'create' | 'update' | 'delete' | 'restore' | 'escalate' | 'link' | 'unlink';
 
+// ── Risk Scoring Types (HP-56) ──
+
+export type UrgencyFlag = 'Low' | 'Medium' | 'High';
+export type EscalationLevel = 'Project' | 'Programme' | 'Portfolio' | 'Board';
+export type RiskTrend = 'Improving' | 'Stable' | 'Deteriorating';
+
 // ── Base Types ──
 
 /** Fields present on all soft-deletable entities */
@@ -97,6 +103,16 @@ export interface RaidItem extends SoftDeletable {
   escalation_note: string | null;
   impact: Impact | null;
   likelihood: Likelihood | null;
+  // Risk scoring fields (HP-56) — only meaningful when type = 'risk'
+  likelihood_score: number | null;
+  impact_score: number | null;
+  inherent_risk_score: number | null;
+  mitigation_score: number | null;
+  residual_risk_score: number | null;
+  urgency_flag: UrgencyFlag | null;
+  escalation_level: EscalationLevel | null;
+  trend: RiskTrend | null;
+  review_date: string | null;
 }
 
 export interface RaidItemLink extends Timestamped {
@@ -255,6 +271,16 @@ export interface CreateRaidItem {
   source_level?: SourceLevel;
   impact?: Impact;
   likelihood?: Likelihood;
+  // Risk scoring (HP-56) — only for type='risk'
+  likelihood_score?: number;
+  impact_score?: number;
+  inherent_risk_score?: number;
+  mitigation_score?: number;
+  residual_risk_score?: number;
+  urgency_flag?: UrgencyFlag;
+  escalation_level?: EscalationLevel;
+  trend?: RiskTrend;
+  review_date?: string;
 }
 
 export interface UpdateRaidItem {
@@ -269,6 +295,16 @@ export interface UpdateRaidItem {
   likelihood?: Likelihood | null;
   is_escalated?: boolean;
   escalation_note?: string;
+  // Risk scoring (HP-56) — only for type='risk'
+  likelihood_score?: number | null;
+  impact_score?: number | null;
+  inherent_risk_score?: number | null;
+  mitigation_score?: number | null;
+  residual_risk_score?: number | null;
+  urgency_flag?: UrgencyFlag | null;
+  escalation_level?: EscalationLevel | null;
+  trend?: RiskTrend | null;
+  review_date?: string | null;
 }
 
 export interface CreateAction {

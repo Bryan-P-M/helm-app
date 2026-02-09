@@ -13,6 +13,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { RAID_TYPE_OPTIONS, RAG_OPTIONS, PRIORITY_OPTIONS } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
+import RiskScoringForm from "./risk-scoring-form";
+import { calculateRiskScores, type RiskScores } from "@/lib/risk-scoring";
 import type { RaidType, RagStatus, Priority } from "@/lib/types";
 
 import { useRouter } from "next/navigation";
@@ -52,6 +54,11 @@ export default function RaidCreateDialog({
     project_id: projectId ?? "",
   });
 
+  // Risk scoring state — only used when type='risk'
+  const [riskScores, setRiskScores] = useState<RiskScores>(
+    () => calculateRiskScores(3, 3, 0) // sensible defaults: Possible × Moderate, no mitigation
+  );
+
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -61,20 +68,31 @@ export default function RaidCreateDialog({
 
     try {
       const supabase = createClient();
+      // Build the insert payload — include scoring fields only for risks
+      const insertData: Record<string, unknown> = {
+        workspace_id: workspaceId,
+        project_id: form.project_id || null,
+        type: form.type,
+        title: form.title,
+        description: form.description || null,
+        priority: form.priority,
+        rag_status: form.type === "risk" ? riskScores.auto_rag : form.rag_status,
+        due_date: form.due_date || null,
+        status: "open",
+        source_level: "project",
+      };
+
+      if (form.type === "risk") {
+        insertData.likelihood_score = riskScores.likelihood_score;
+        insertData.impact_score = riskScores.impact_score;
+        insertData.inherent_risk_score = riskScores.inherent_risk_score;
+        insertData.mitigation_score = riskScores.mitigation_score;
+        insertData.residual_risk_score = riskScores.residual_risk_score;
+      }
+
       const { error: insertError } = await supabase
         .from("raid_items")
-        .insert([{
-          workspace_id: workspaceId,
-          project_id: form.project_id || null,
-          type: form.type,
-          title: form.title,
-          description: form.description || null,
-          priority: form.priority,
-          rag_status: form.rag_status,
-          due_date: form.due_date || null,
-          status: "open",
-          source_level: "project",
-        }]);
+        .insert([insertData]);
 
       if (insertError) throw insertError;
 
@@ -147,6 +165,15 @@ export default function RaidCreateDialog({
               </Select>
             </div>
           </div>
+          {/* Risk scoring panel — only shown when creating a Risk item */}
+          {form.type === "risk" && (
+            <RiskScoringForm
+              likelihood={riskScores.likelihood_score}
+              impact={riskScores.impact_score}
+              mitigation={riskScores.mitigation_score}
+              onChange={setRiskScores}
+            />
+          )}
           <div>
             <Label>Due Date</Label>
             <Input type="date" value={form.due_date} onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))} />
