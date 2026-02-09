@@ -21,6 +21,7 @@ import {
 import type { RaidItemWithOwner, RaidType, RaidStatus, RagStatus } from "@/lib/types";
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import ExportCSVButton from "@/components/shared/export-csv-button";
+import RiskScoreBadge from "./risk-score-badge";
 
 function raidIdPrefix(type: string) {
   return RAID_TYPE_SHORT[type as RaidType] ?? type.charAt(0).toUpperCase();
@@ -173,6 +174,7 @@ export default function RaidTable({
               <TableHead className="cursor-pointer" onClick={() => handleSort("title")}>Title</TableHead>
               <TableHead className="cursor-pointer w-[100px]" onClick={() => handleSort("status")}>Status</TableHead>
               <TableHead className="w-[60px]">RAG</TableHead>
+              <TableHead className="cursor-pointer w-[70px]" onClick={() => handleSort("residual_risk_score")}>Score</TableHead>
               <TableHead className="w-[120px]">Owner</TableHead>
               <TableHead className="cursor-pointer w-[100px]" onClick={() => handleSort("due_date")}>Due</TableHead>
             </TableRow>
@@ -180,7 +182,7 @@ export default function RaidTable({
           <TableBody>
             {filteredItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                   No RAID items found.
                 </TableCell>
               </TableRow>
@@ -201,6 +203,13 @@ export default function RaidTable({
                     </TableCell>
                     <TableCell>
                       <Badge className={RAG_BADGE_CLASSES[item.rag_status]}>{item.rag_status}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {item.type === "risk" ? (
+                        <RiskScoreBadge score={item.residual_risk_score} />
+                      ) : (
+                        <span className="text-muted-foreground text-xs">–</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm">
                       {(item as any).owner?.full_name ?? <span className="text-muted-foreground">Unassigned</span>}

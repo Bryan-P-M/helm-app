@@ -19,6 +19,9 @@ import type {
   AttendeeRole,
   ParticipantRole,
   RaidLinkType,
+  UrgencyFlag,
+  EscalationLevel,
+  RiskTrend,
 } from '@/lib/types';
 
 // ── RAG Status ──
@@ -265,4 +268,25 @@ export const PROJECT_STATUS_OPTIONS: { value: ProjectStatus; label: string }[] =
   { value: 'on_hold', label: 'On Hold' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
+];
+
+// ── Risk Scoring Options (HP-56) ──
+
+export const URGENCY_FLAG_OPTIONS: { value: UrgencyFlag; label: string }[] = [
+  { value: 'Low', label: 'Low' },
+  { value: 'Medium', label: 'Medium' },
+  { value: 'High', label: 'High' },
+];
+
+export const ESCALATION_LEVEL_OPTIONS: { value: EscalationLevel; label: string }[] = [
+  { value: 'Project', label: 'Project' },
+  { value: 'Programme', label: 'Programme' },
+  { value: 'Portfolio', label: 'Portfolio' },
+  { value: 'Board', label: 'Board' },
+];
+
+export const RISK_TREND_OPTIONS: { value: RiskTrend; label: string }[] = [
+  { value: 'Improving', label: 'Improving' },
+  { value: 'Stable', label: 'Stable' },
+  { value: 'Deteriorating', label: 'Deteriorating' },
 ];
