@@ -145,7 +145,7 @@ export default function RaidCreateDialog({
             <Label>Description</Label>
             <Textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className={`grid gap-3 ${form.type !== "risk" ? "grid-cols-2" : "grid-cols-1"}`}>
             <div>
               <Label>Priority</Label>
               <Select value={form.priority} onValueChange={(v) => setForm((f) => ({ ...f, priority: v as Priority }))}>
@@ -155,15 +155,18 @@ export default function RaidCreateDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>RAG Status</Label>
-              <Select value={form.rag_status} onValueChange={(v) => setForm((f) => ({ ...f, rag_status: v as RagStatus }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {RAG_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* RAG Status — hidden for risks (auto-computed from score) */}
+            {form.type !== "risk" && (
+              <div>
+                <Label>RAG Status</Label>
+                <Select value={form.rag_status} onValueChange={(v) => setForm((f) => ({ ...f, rag_status: v as RagStatus }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {RAG_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           {/* Risk scoring panel — only shown when creating a Risk item */}
           {form.type === "risk" && (
